@@ -203,12 +203,14 @@
         </div>
 
         <!-- REPORTES -->
+<!-- REPORTES -->
         <div class="card">
             <div>
-                <h2>📊 Reportes</h2>
-                <p>Visualiza impacto ambiental generado.</p>
+                <h2>♻️ Huella de carbono</h2>
+                <p>Responde las preguntas y conoce tu impacto ambiental.</p>
             </div>
-            <a href="#" class="btn-secondary">Ver reportes</a>
+            <!-- AHORA APUNTA A LA RUTA DE LA CALCULADORA -->
+            <a href="{{ route('carbon.form') }}" class="btn-primary">Calcular huella</a>
         </div>
 
     </div>

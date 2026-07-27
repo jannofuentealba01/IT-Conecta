@@ -48,15 +48,23 @@ class User extends Authenticatable
         ];
     }
 
-    public function activities()
-    {
-    return $this->belongsToMany(Activity::class)->withTimestamps();
-    }
+public function activities()
+{
+    return $this->belongsToMany(Activity::class, 'user_activities')
+        ->withPivot('points_earned', 'co2_reduced')
+        ->withTimestamps();
+}
 
-    public function getTotalPointsAttribute()
-    {
-    return $this->activities->sum('points');
-    }
-    
+public function totalPoints()
+{
+    return $this->activities()->sum('user_activities.points_earned');
+}
+
+
+public function totalCO2()
+{
+    return $this->activities()->sum('user_activities.co2_reduced');
+}
 
 }
+

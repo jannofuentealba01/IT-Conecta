@@ -190,7 +190,8 @@
 
 <div class="container">
 
-    <!-- NAVBAR UNIFICADA CON PUNTOS -->
+
+<!-- NAVBAR UNIFICADA CON PUNTOS -->
     <header class="navbar">
         <!-- Logo e inicio -->
         <a href="{{ route('dashboard') }}" class="brand-group" title="Ir al Dashboard">
@@ -198,27 +199,24 @@
             <h1>IT Conecta</h1>
         </a>
 
-        <!-- Datos de sesión y puntos -->
-        @auth
+        <!-- Datos de sesión del participante -->
+        @if (session()->has('participant_id'))
         <div class="user-badge">
             <div class="user-info">
-                <span>👤 {{ Auth::user()->name }}</span>
-                <span class="points-highlight">⭐ {{ Auth::user()->total_points ?? 0 }} puntos</span>
+                <span>👤 {{ session('participant_name') }} ({{ session('participant_course') }})</span>
+                <span class="points-highlight">📍 Sala: {{ session('room_code') }}</span>
             </div>
 
-            <!-- Botón de Logout -->
-            <a href="{{ route('logout') }}"
-               onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-               class="logout-btn">
-                Cerrar sesión
+            <!-- Botón para Salir de la Sala -->
+            <a href="{{ route('room.exit') }}" class="logout-btn">
+                Salir de la sala
             </a>
-
-            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">
-                @csrf
-            </form>
         </div>
-        @endauth
+        @endif
     </header>
+
+
+
 
     <!-- ALERTAS GLOBALES DE SESIÓN (ÉXITO / ERROR) -->
     @if (session('success'))

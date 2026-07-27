@@ -16,10 +16,12 @@ class Activity extends Model
         'co2_impact'
     ];
 
-        public function users()
-    {
-        return $this->belongsToMany(User::class)->withTimestamps();
-    }
+    public function users()
+{
+    return $this->belongsToMany(User::class, 'user_activities')
+        ->withPivot('points_earned', 'co2_reduced')
+        ->withTimestamps();
+}
 
 
 }

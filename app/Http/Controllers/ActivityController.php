@@ -89,15 +89,18 @@ class ActivityController extends Controller
 
 
 
-    public function do($id)
-    {
-        $user = Auth::user();
+public function do($id)
+{
+    $user = Auth::user();
+    $activity = Activity::findOrFail($id);
 
-        $user->activities()->syncWithoutDetaching([$id]);
+    $user->activities()->attach($id, [
+        'points_earned' => $activity->points,
+        'co2_reduced' => $activity->co2,
+    ]);
 
-        return redirect()->back()->with('success', 'Actividad registrada');
-    }
-
+    return redirect()->back()->with('success', 'Actividad registrada');
+}
     public function scan($id)
     {
         $user = Auth::user();

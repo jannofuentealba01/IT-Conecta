@@ -171,9 +171,58 @@
                     <h2>¡Hola de nuevo!</h2>
                     <a href="{{ url('/dashboard') }}" class="btn-dashboard">Ir al Dashboard</a>
                 @else
-                    <h2>Accede a tu cuenta</h2>
 
-                    <a href="{{ route('login') }}" class="btn-login">Iniciar Sesión</a>
+
+
+<div class="join-room-card" style="background: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 400px; margin: 0 auto; text-align: center;">
+    
+    <h2 style="color: #0f766e; font-size: 22px; font-weight: 800; margin-bottom: 8px;">
+        🎮 Únete a una Sala
+    </h2>
+    <p style="color: #6b7280; font-size: 14px; margin-bottom: 20px;">
+        Ingresa el código que te dio tu profesor para comenzar.
+    </p>
+
+
+<!-- MOSTRAR MENSAJES DE ERROR -->
+@if (session('error'))
+    <div style="background: #fee2e2; border: 1px solid #f87171; color: #991b1b; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; font-weight: 600;">
+        ❌ {{ session('error') }}
+    </div>
+@endif
+
+@if ($errors->any())
+    <div style="background: #fee2e2; border: 1px solid #f87171; color: #991b1b; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; font-weight: 600;">
+        ⚠️ {{ $errors->first() }}
+    </div>
+@endif
+
+    <!-- FORMULARIO DE INGRESO DE CÓDIGO -->
+    <form method="POST" action="{{ route('room.join') }}">
+        @csrf
+
+        <div style="margin-bottom: 20px;">
+            <input 
+                type="text" 
+                name="code" 
+                placeholder="Ej: 123456" 
+                required 
+                maxlength="10"
+                style="width: 100%; padding: 14px; font-size: 20px; font-weight: 800; text-align: center; letter-spacing: 3px; border: 2px solid #a7f3d0; border-radius: 10px; outline: none; text-transform: uppercase; color: #065f46; box-sizing: border-box;"
+                onfocus="this.style.borderColor='#059669';"
+                onblur="this.style.borderColor='#a7f3d0';"
+            >
+        </div>
+
+        <button 
+            type="submit" 
+            style="width: 100%; background: linear-gradient(135deg, #059669, #047857); color: white; border: none; padding: 14px; font-size: 16px; font-weight: 700; border-radius: 10px; cursor: pointer; transition: all 0.2s;"
+        >
+            🚀 Ingresar a la Sala
+        </button>
+    </form>
+</div>
+
 
                     @if (Route::has('register'))
                         <a href="{{ route('register') }}" class="btn-register">Registrarse</a>

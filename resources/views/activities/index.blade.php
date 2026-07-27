@@ -217,7 +217,7 @@
             📋 Lista de Actividades Ecológicas
         </h2>
 
-        @if(auth()->user()->rol === 'admin')
+        @if(auth()->user()?->rol === 'admin')
             <a href="{{ route('activities.create') }}" class="btn-create">
                 ➕ Nueva Actividad
             </a>
@@ -270,7 +270,7 @@
                             </form>
 
                             <!-- Solo administrador -->
-                            @if(auth()->user()->rol === 'admin')
+                            @if(auth()->user()?->rol === 'admin')
 
                                 <a href="{{ route('activities.edit', $activity->id) }}"
                                    class="btn-action btn-edit">

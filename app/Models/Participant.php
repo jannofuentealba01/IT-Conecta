@@ -14,7 +14,19 @@ class Participant extends Model
         'room_id',
         'name',
         'course',
+        'normalized_name',
+        'recovery_token',
+        'joined_at',
+        'last_seen_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'joined_at' => 'datetime',
+            'last_seen_at' => 'datetime',
+        ];
+    }
 
     // Relación de pertenencia a una sala (Room)
     public function room()
@@ -25,10 +37,42 @@ class Participant extends Model
     public function activities()
     {
         return $this->belongsToMany(Activity::class, 'activity_participant')
-                    ->withPivot('points_earned', 'co2_reduced')
-                    ->withTimestamps();
+            ->withPivot('points_earned', 'co2_reduced')
+            ->withTimestamps();
     }
 
+    public function clues()
+    {
+        return $this->hasMany(ImpostorClue::class);
+    }
 
-    
+    public function votes()
+    {
+        return $this->hasMany(ImpostorVote::class, 'voter_id');
+    }
+
+    public function carbonFootprints()
+    {
+        return $this->hasMany(CarbonFootprint::class);
+    }
+
+    public function currentCarbonFootprint()
+    {
+        return $this->hasOne(CarbonFootprint::class)->where('is_current', true)->latestOfMany();
+    }
+
+    public function activityCompletions()
+    {
+        return $this->hasMany(ActivityCompletion::class);
+    }
+
+    public function pointTransactions()
+    {
+        return $this->hasMany(PointTransaction::class);
+    }
+
+    public function totalPoints(): int
+    {
+        return (int) $this->pointTransactions()->sum('points');
+    }
 }

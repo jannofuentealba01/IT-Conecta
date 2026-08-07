@@ -2,41 +2,84 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\CarbonFootprint;
+use App\Models\Participant;
 use App\Services\CarbonCalculator;
+use App\Services\CarbonQuestionnaire;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class CarbonCalculatorController extends Controller
 {
-    /**
-     * Muestra la vista con el formulario de 10 preguntas.
-     */
-    public function showForm()
+    private const MAX_CALCULATIONS = 2;
+
+    public function showForm(Request $request, CarbonQuestionnaire $questionnaire, CarbonCalculator $calculator)
     {
-        return view('carbon.calculator');
+        $participant = Participant::findOrFail($request->session()->get('participant_id'));
+        $currentFootprint = $participant->carbonFootprints()->where('is_current', true)->latest()->first();
+        $history = $participant->carbonFootprints()->latest()->take(5)->get();
+        $history->each(function (CarbonFootprint $item) use ($calculator): void {
+            $item->footprint_classification = $calculator->classification((float) $item->initial_kg_co2e_year);
+        });
+        $calculationCount = $participant->carbonFootprints()->count();
+        $canCalculate = $calculationCount < self::MAX_CALCULATIONS;
+        $attemptNumber = min($calculationCount + 1, self::MAX_CALCULATIONS);
+        $classification = $currentFootprint
+            ? $calculator->classification((float) $currentFootprint->initial_kg_co2e_year)
+            : null;
+        $showQuestionnaire = $canCalculate && (
+            $request->boolean('new')
+            || ! $currentFootprint
+            || $request->session()->has('errors')
+        );
+
+        return view('carbon.calculator', [
+            'questions' => $questionnaire->questionsForParticipant($participant->id, $attemptNumber),
+            'currentFootprint' => $currentFootprint,
+            'history' => $history,
+            'classification' => $classification,
+            'showQuestionnaire' => $showQuestionnaire,
+            'canCalculate' => $canCalculate,
+            'calculationCount' => $calculationCount,
+            'maxCalculations' => self::MAX_CALCULATIONS,
+        ]);
     }
 
-    public function calculate(Request $request)
-    {
-        $request->validate([
-            'p1'  => 'required|numeric',
-            'p2'  => 'required|numeric',
-            'p3'  => 'required|numeric',
-            'p4'  => 'required|numeric',
-            'p5'  => 'required|numeric',
-            'p6'  => 'required|numeric',
-            'p7'  => 'required|numeric',
-            'p8'  => 'required|numeric',
-            'p9'  => 'required|numeric',
-            'p10' => 'required|numeric',
-        ]);
+    public function calculate(
+        Request $request,
+        CarbonQuestionnaire $questionnaire,
+        CarbonCalculator $calculator
+    ) {
+        $answers = $request->validate($questionnaire->validationRules());
+        $total = $calculator->calculate($answers);
+        $participantId = (int) $request->session()->get('participant_id');
 
-        $calculator = new CarbonCalculator();
+        $footprint = DB::transaction(function () use ($participantId, $answers, $total): CarbonFootprint {
+            $participant = Participant::whereKey($participantId)->lockForUpdate()->firstOrFail();
 
-        $totalKg = $calculator->calculate($request->all());
+            if ($participant->carbonFootprints()->count() >= self::MAX_CALCULATIONS) {
+                throw ValidationException::withMessages([
+                    'calculator' => 'Ya utilizaste los dos cálculos disponibles para esta sala.',
+                ]);
+            }
 
-        return redirect()->back()->with([
-            'success'  => "¡Cálculo completado! Tu huella es de {$totalKg} kg de CO₂.",
-            'total_co2' => $totalKg
-        ]);
+            CarbonFootprint::where('participant_id', $participantId)
+                ->where('is_current', true)
+                ->update(['is_current' => false, 'current_marker' => null]);
+
+            return CarbonFootprint::create([
+                'participant_id' => $participantId,
+                'initial_kg_co2e_year' => $total,
+                'answers' => $answers,
+                'calculator_version' => CarbonQuestionnaire::VERSION,
+                'is_current' => true,
+                'current_marker' => 1,
+            ]);
+        });
+
+        return redirect()->route('carbon.form')
+            ->with('success', 'Tu huella inicial quedó guardada correctamente.')
+            ->with('calculation_saved', $footprint->id);
     }
 }

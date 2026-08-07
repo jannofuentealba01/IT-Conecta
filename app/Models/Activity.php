@@ -3,26 +3,55 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\User;
-
 
 class Activity extends Model
 {
-    
     protected $fillable = [
+        'user_id',
         'name',
         'description',
+        'instructions',
+        'category',
+        'impact_level',
         'points',
-        'co2_impact'
+        'co2_impact',
+        'annual_co2_reduction',
+        'educational_message',
+        'validation_type',
+        'frequency_days',
+        'is_active',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'co2_impact' => 'decimal:2',
+            'annual_co2_reduction' => 'decimal:2',
+            'is_active' => 'boolean',
+        ];
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function rooms()
+    {
+        return $this->belongsToMany(Room::class, 'room_activity')
+            ->withPivot(['qr_token', 'is_active', 'opens_at', 'closes_at'])
+            ->withTimestamps();
+    }
+
+    public function completions()
+    {
+        return $this->hasMany(ActivityCompletion::class);
+    }
+
     public function users()
-{
-    return $this->belongsToMany(User::class, 'user_activities')
-        ->withPivot('points_earned', 'co2_reduced')
-        ->withTimestamps();
+    {
+        return $this->belongsToMany(User::class, 'user_activities')
+            ->withPivot('points_earned', 'co2_reduced')
+            ->withTimestamps();
+    }
 }
-
-
-}
-

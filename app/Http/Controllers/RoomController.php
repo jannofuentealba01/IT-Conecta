@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Room;
 use App\Models\Participant;
+use App\Models\Room;
+use App\Services\ParticipantIdentity;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
 
 class RoomController extends Controller
 {
@@ -15,15 +17,25 @@ class RoomController extends Controller
     {
         // Validamos que hayan escrito algo
         $request->validate([
-            'code' => 'required|string',
+            'code' => ['required', 'digits:6'],
         ]);
 
-        // Buscamos si la sala existe en la base de datos
-        $room = Room::where('code', $request->code)->first();
+        $code = strtoupper(trim($request->string('code')->toString()));
+        $room = Room::where('code', $code)->first();
 
-        // Si no existe la sala, volvemos atrás con un mensaje de error
-        if (!$room) {
-            return back()->with('error', 'El código de sala ingresado no existe. Verifica con tu profesor.');
+        if (! $room || ! $room->isOpen()) {
+            if ($room?->status === 'open' && $room->expires_at?->isPast()) {
+                $room->update(['status' => 'closed', 'closed_at' => now()]);
+            }
+
+            return back()->with('error', 'La sala no existe, está cerrada o su código expiró. Verifica con tu profesor.');
+        }
+
+        if ($participant = $this->knownParticipant($request, $room)) {
+            $this->startStudentSession($request, $room, $participant);
+
+            return redirect()->route('student.dashboard')
+                ->with('success', '¡Bienvenido(a) nuevamente, '.$participant->name.'!');
         }
 
         // Si existe, lo redirigimos al formulario para ingresar Nombre y Curso
@@ -33,10 +45,21 @@ class RoomController extends Controller
     /**
      * MÉTODO 2: Muestra la vista donde el alumno ingresa su Nombre y Curso (room/join.blade.php).
      */
-    public function showJoinForm($code)
+    public function showJoinForm(Request $request, $code)
     {
         // Confirmamos que la sala sigue existiendo o lanzamos un error 404
         $room = Room::where('code', $code)->firstOrFail();
+
+        if (! $room->isOpen()) {
+            return redirect()->route('home')->with('error', 'Esta sala ya no está disponible.');
+        }
+
+        if ($participant = $this->knownParticipant($request, $room)) {
+            $this->startStudentSession($request, $room, $participant);
+
+            return redirect()->route('student.dashboard')
+                ->with('success', '¡Bienvenido(a) nuevamente, '.$participant->name.'!');
+        }
 
         // Retornamos la vista pasando el objeto $room y su $code
         return view('room.join', compact('room', 'code'));
@@ -45,36 +68,104 @@ class RoomController extends Controller
     /**
      * MÉTODO 3: Registra al participante en la BD y guarda sus datos en la SESIÓN de Laravel.
      */
-    public function enter(Request $request, $code)
+    public function enter(Request $request, string $code, ParticipantIdentity $identity)
     {
         // 1. Buscamos la sala por el código
         $room = Room::where('code', $code)->firstOrFail();
 
-        // 2. Validamos que el alumno haya ingresado su nombre y curso
+        if (! $room->isOpen()) {
+            return redirect()->route('home')->with('error', 'Esta sala ya no está disponible.');
+        }
+
+        // 2. El curso se obtiene desde la sala creada por el profesor.
         $request->validate([
-            'name'   => 'required|string|max:100',
-            'course' => 'required|string|max:50',
+            'name' => ['required', 'string', 'min:2', 'max:100', 'not_regex:/[<>]/'],
         ]);
 
-        // 3. Creamos el registro del alumno temporal en la tabla `participants`
-        $participant = Participant::create([
-            'room_id' => $room->id,
-            'name'    => $request->name,
-            'course'  => $request->course,
-        ]);
+        $name = $identity->clean($request->string('name')->toString());
+        $normalizedName = $identity->normalize($name);
+        $cookieName = $this->participantCookieName($room);
+        $recoveryToken = $request->cookie($cookieName);
 
-        // 4. GUARDAR EN SESIÓN (¡Punto clave!):
-        // Como no usamos login convencional de email/password, guardamos estos datos 
-        // en la sesión del navegador para saber quién está haciendo la actividad.
-        session([
-            'participant_id'   => $participant->id,
-            'participant_name' => $participant->name,
-            'participant_course' => $participant->course,
-            'room_id'          => $room->id,
-            'room_code'        => $room->code,
-        ]);
+        $participant = null;
+
+        if ($recoveryToken) {
+            $participant = Participant::where('room_id', $room->id)
+                ->where('recovery_token', $recoveryToken)
+                ->where('normalized_name', $normalizedName)
+                ->first();
+        }
+
+        $participant ??= Participant::where('room_id', $room->id)
+            ->where('normalized_name', $normalizedName)
+            ->orderByDesc('last_seen_at')
+            ->orderByDesc('id')
+            ->first();
+
+        if (! $participant) {
+            $participant = Participant::create([
+                'room_id' => $room->id,
+                'name' => $name,
+                'normalized_name' => $normalizedName,
+                'course' => $room->course?->name ?? $room->name ?? 'Sin curso',
+                'recovery_token' => str()->random(64),
+                'joined_at' => now(),
+                'last_seen_at' => now(),
+            ]);
+        } else {
+            $participant->update([
+                'name' => $name,
+                'normalized_name' => $normalizedName,
+                'last_seen_at' => now(),
+            ]);
+        }
+
+        $this->startStudentSession($request, $room, $participant);
 
         // 5. Redirigimos al Dashboard o inicio del sistema
-        return redirect()->route('dashboard')->with('success', '¡Bienvenido(a) ' . $participant->name . '!');
+        Cookie::queue(
+            $cookieName,
+            $participant->recovery_token,
+            60 * 24 * 30,
+            '/',
+            null,
+            app()->environment('production'),
+            true,
+            false,
+            'lax'
+        );
+
+        return redirect()->route('student.dashboard')->with('success', '¡Bienvenido(a) '.$participant->name.'!');
+    }
+
+    private function knownParticipant(Request $request, Room $room): ?Participant
+    {
+        $recoveryToken = $request->cookie($this->participantCookieName($room));
+
+        if (! is_string($recoveryToken) || strlen($recoveryToken) !== 64) {
+            return null;
+        }
+
+        return Participant::where('room_id', $room->id)
+            ->where('recovery_token', $recoveryToken)
+            ->first();
+    }
+
+    private function startStudentSession(Request $request, Room $room, Participant $participant): void
+    {
+        $participant->update(['last_seen_at' => now()]);
+        $request->session()->regenerate();
+        $request->session()->put([
+            'participant_id' => $participant->id,
+            'participant_name' => $participant->name,
+            'participant_course' => $room->course?->name ?? $participant->course,
+            'room_id' => $room->id,
+            'room_code' => $room->code,
+        ]);
+    }
+
+    private function participantCookieName(Room $room): string
+    {
+        return 'it_conecta_participant_'.$room->id;
     }
 }

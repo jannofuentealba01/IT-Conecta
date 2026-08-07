@@ -2,252 +2,129 @@
 
 @section('content')
 <style>
-    .calculator-card {
-        background: rgba(255, 255, 255, 0.95);
-        padding: 35px 30px;
-        border-radius: 20px;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
-        backdrop-filter: blur(10px);
-        max-width: 800px;
-        margin: 0 auto;
-    }
-
-    .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 25px;
-        border-bottom: 2px solid #e6f4ea;
-        padding-bottom: 15px;
-    }
-
-    .result-box {
-        background: linear-gradient(135deg, #059669, #047857);
-        color: white;
-        padding: 20px;
-        border-radius: 14px;
-        text-align: center;
-        margin-bottom: 25px;
-        box-shadow: 0 10px 20px rgba(5, 150, 105, 0.2);
-    }
-
-    .grid-questions {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-    }
-
-    .question-group {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .question-group label {
-        font-size: 13.5px;
-        font-weight: 700;
-        color: #065f46;
-        line-height: 1.3;
-    }
-
-    .form-select {
-        width: 100%;
-        padding: 11px 14px;
-        border: 1.5px solid #a7f3d0;
-        border-radius: 10px;
-        font-size: 14px;
-        color: #1f2937;
-        background-color: #fcfdfd;
-        outline: none;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .form-select:focus {
-        border-color: #059669;
-        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
-    }
-
-    .btn-submit {
-        width: 100%;
-        background: linear-gradient(135deg, #059669, #047857);
-        color: white;
-        border: none;
-        padding: 15px;
-        border-radius: 12px;
-        font-weight: 700;
-        font-size: 16px;
-        margin-top: 30px;
-        cursor: pointer;
-        transition: all 0.2s;
-        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
-    }
-
-    .btn-submit:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(5, 150, 105, 0.3);
-    }
-
-    .btn-back {
-        text-decoration: none;
-        background: #f3f4f6;
-        color: #374151;
-        padding: 8px 14px;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 700;
-        border: 1px solid #e5e7eb;
-    }
-
-    @media (max-width: 640px) {
-        .grid-questions { grid-template-columns: 1fr; }
-        .calculator-card { padding: 20px 15px; }
-    }
+    .carbon-shell { max-width:760px; margin:0 auto; }
+    .carbon-card { background:#fff; border:1px solid #d1fae5; border-radius:20px; padding:28px; box-shadow:0 15px 35px rgba(6,78,59,.08); }
+    .carbon-title { color:#065f46; font-size:25px; margin:0 0 7px; }
+    .carbon-subtitle { color:#6b7280; line-height:1.5; margin:0 0 22px; }
+    .question { display:none; }
+    .question.active { display:block; }
+    .question-label { display:block; color:#064e3b; font-size:19px; font-weight:750; line-height:1.4; }
+    .form-select { width:100%; padding:13px; border-radius:11px; border:1.5px solid #a7f3d0; margin:18px 0; color:#1f2937; background:#fff; font-size:15px; }
+    .carbon-btn { min-height:48px; display:inline-flex; align-items:center; justify-content:center; background:#059669; color:#fff; border:0; padding:12px 19px; border-radius:10px; cursor:pointer; font-weight:750; text-decoration:none; }
+    .carbon-btn-secondary { background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; }
+    .question-actions { display:flex; justify-content:space-between; gap:10px; }
+    .progress-track { height:8px; background:#e5e7eb; border-radius:999px; margin-bottom:25px; overflow:hidden; }
+    .progress-bar { height:100%; width:10%; background:linear-gradient(90deg,#10b981,#059669); transition:width .2s; }
+    .result-box { padding:25px; border-radius:17px; text-align:center; margin-top:20px; }
+    .result-low { background:#ecfdf5; border:1px solid #4ade80; color:#166534; }
+    .result-medium { background:#fffbeb; border:1px solid #fbbf24; color:#92400e; }
+    .result-high { background:#fff1f2; border:1px solid #fb7185; color:#9f1239; }
+    .history { margin-top:18px; }
+    .history-row { display:flex; justify-content:space-between; gap:15px; padding:13px 0; border-bottom:1px solid #e5e7eb; }
+    .history-row:last-child { border-bottom:0; }
+    .history-value { display:inline-block; padding:5px 9px; border-radius:8px; font-weight:850; }
+    .history-value-low { color:#166534; background:#dcfce7; }
+    .history-value-medium { color:#92400e; background:#fef3c7; }
+    .history-value-high { color:#991b1b; background:#fee2e2; }
+    .method-note { margin-top:18px; padding:13px; background:#f9fafb; border-radius:10px; color:#6b7280; font-size:12px; line-height:1.5; }
+    @media(max-width:640px) { .carbon-card{padding:20px 16px}.question-actions{flex-direction:column-reverse}.carbon-btn{width:100%} }
 </style>
 
-<div class="calculator-card">
-    <div class="section-header">
-        <h2 style="color: #0f766e; font-size: 22px; font-weight: 800;">
-            📊 Calculadora de Huella de Carbono
-        </h2>
-        <a href="{{ route('dashboard') }}" class="btn-back">⬅️ Volver</a>
+<div class="carbon-shell">
+    <div class="carbon-card">
+        <h1 class="carbon-title">📊 Calculadora de Huella de Carbono</h1>
+        <p class="carbon-subtitle">Obtendrás una estimación educativa de tus emisiones anuales. El resultado quedará guardado para medir tu progreso.</p>
+
+        @error('calculator')
+            <div style="background:#fff1f2; color:#9f1239; padding:12px; border-radius:10px; margin-bottom:18px;">{{ $message }}</div>
+        @enderror
+
+        @if($showQuestionnaire)
+            @if($calculationCount === 0)
+                <div style="background:#ecfdf5; color:#065f46; padding:12px; border-radius:10px; margin-bottom:18px; line-height:1.45;">
+                    Responde con calma y de acuerdo con tus hábitos cotidianos.
+                </div>
+            @endif
+            @if($errors->any())
+                <div style="background:#fff1f2; color:#9f1239; padding:12px; border-radius:10px; margin-bottom:18px;">Revisa las respuestas antes de continuar.</div>
+            @endif
+
+            <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+            <form method="POST" action="{{ route('carbon.calculate') }}" id="carbonForm">
+                @csrf
+                @foreach($questions as $key => $question)
+                    <div class="question {{ $loop->first ? 'active' : '' }}" data-question="{{ $loop->index }}">
+                        <p style="color:#059669; font-size:13px; font-weight:800; margin-bottom:8px;">Pregunta {{ $loop->iteration }} de {{ count($questions) }}</p>
+                        <label class="question-label" for="{{ $key }}">{{ $question['label'] }}</label>
+                        <select id="{{ $key }}" name="{{ $key }}" class="form-select" required>
+                            <option value="">Selecciona una alternativa...</option>
+                            @foreach($question['options'] as $value => $option)
+                                <option value="{{ $value }}" @selected(old($key) === $value)>{{ $option['label'] }}</option>
+                            @endforeach
+                        </select>
+                        @error($key)<div style="color:#b91c1c; font-size:13px; margin-bottom:12px;">{{ $message }}</div>@enderror
+                        <div class="question-actions">
+                            @unless($loop->first)<button type="button" class="carbon-btn carbon-btn-secondary previous">← Anterior</button>@else<span></span>@endunless
+                            @if($loop->last)<button type="submit" class="carbon-btn">Guardar mi resultado ⚡</button>@else<button type="button" class="carbon-btn next">Siguiente →</button>@endif
+                        </div>
+                    </div>
+                @endforeach
+            </form>
+        @elseif($currentFootprint)
+            <div class="result-box result-{{ $classification['key'] }}">
+                <div style="font-size:34px;">{{ $classification['icon'] }}</div>
+                <h2 style="font-size:34px; margin:7px 0;">{{ number_format((float)$currentFootprint->initial_kg_co2e_year, 2, ',', '.') }}</h2>
+                <p style="font-weight:750; margin:0 0 7px;">kg CO₂e por año</p>
+                <p style="margin:0 0 19px;">{{ $classification['message'] }}</p>
+                <a href="{{ route('student.dashboard') }}" class="carbon-btn">Ir a mis actividades</a>
+                @if($canCalculate)
+                    <div style="margin-top:13px;">
+                        <a href="{{ route('carbon.form', ['new' => 1]) }}" style="color:#64748b;font-size:12px;text-decoration:underline;text-underline-offset:2px;">Repetir</a>
+                    </div>
+                @endif
+            </div>
+            <p class="method-note">Este resultado es una estimación educativa basada en la versión {{ $currentFootprint->calculator_version }} de la calculadora. No representa una medición certificada.</p>
+        @endif
     </div>
 
-    <!-- RECUADRO DE RESULTADO -->
-    @if (session('total_co2') !== null)
-        <div class="result-box">
-            <span style="font-size: 32px;">🌱</span>
-            <h3 style="font-size: 26px; font-weight: 800; margin: 5px 0;">
-                {{ session('total_co2') }} kg CO₂e/año
-            </h3>
-            <p style="font-size: 14.5px; opacity: 0.95;">
-                {{ session('success') }}
-            </p>
+    @if($history->isNotEmpty())
+        <div class="carbon-card history">
+            <h2 style="color:#065f46; font-size:18px; margin:0 0 5px;">Historial de cálculos</h2>
+            <p class="carbon-subtitle" style="margin-bottom:8px;">El cálculo más reciente se utiliza como tu huella inicial vigente.</p>
+            @foreach($history as $item)
+                <div class="history-row">
+                    <div><strong class="history-value history-value-{{ $item->footprint_classification['key'] }}">{{ number_format((float)$item->initial_kg_co2e_year, 2, ',', '.') }} kg CO₂e/año</strong><div style="color:#6b7280; font-size:12px;margin-top:4px;">{{ $item->created_at->format('d/m/Y H:i') }}</div></div>
+                    @if($item->is_current)<span style="color:#047857; font-size:12px; font-weight:800;">VIGENTE</span>@else<span style="color:#9ca3af; font-size:12px;">Anterior</span>@endif
+                </div>
+            @endforeach
         </div>
     @endif
 
-    <!-- FORMULARIO DE PREGUNTAS REALES -->
-    <form action="{{ route('carbon.calculate') }}" method="POST">
-        @csrf
-
-        <div class="grid-questions">
-            
-            <!-- P1 -->
-            <div class="question-group">
-                <label for="p1">1. ¿Cuál es el medio de transporte principal al liceo?</label>
-                <select name="p1" id="p1" class="form-select" required>
-                    <option value="" disabled selected>Selecciona una opción...</option>
-                    <option value="0.0">Caminando</option>
-                    <option value="0.0">Bicicleta</option>
-                    <option value="72.5">Transporte público</option>
-                    <option value="390.5">Auto particular</option>
-                </select>
-            </div>
-
-            <!-- P2 -->
-            <div class="question-group">
-                <label for="p2">2. ¿Cuánto tiempo tardas en llegar?</label>
-                <select name="p2" id="p2" class="form-select" required>
-                    <option value="" disabled selected>Selecciona una opción...</option>
-                    <option value="0.5">Menos de 10 minutos</option>
-                    <option value="1.0">10-30 minutos</option>
-                    <option value="2.0">Más de 30 minutos</option>
-                </select>
-            </div>
-
-            <!-- P3 -->
-            <div class="question-group">
-                <label for="p3">3. ¿Cuántas horas usas tu computador, celular o consola diariamente?</label>
-                <select name="p3" id="p3" class="form-select" required>
-                    <option value="" disabled selected>Selecciona una opción...</option>
-                    <option value="13.5">Menos de 1 hora</option>
-                    <option value="40.5">1-3 horas</option>
-                    <option value="94.6">Más de 3 horas</option>
-                </select>
-            </div>
-
-            <!-- P4 -->
-            <div class="question-group">
-                <label for="p4">4. Cuando sales de una habitación ¿apagas las luces?</label>
-                <select name="p4" id="p4" class="form-select" required>
-                    <option value="" disabled selected>Selecciona una opción...</option>
-                    <option value="0.0">Siempre apago luces</option>
-                    <option value="18.0">A veces</option>
-                    <option value="43.8">Nunca</option>
-                </select>
-            </div>
-
-            <!-- P5 -->
-            <div class="question-group">
-                <label for="p5">5. ¿Cuánto dura normalmente tu ducha?</label>
-                <select name="p5" id="p5" class="form-select" required>
-                    <option value="" disabled selected>Selecciona una opción...</option>
-                    <option value="2.6">Menos de 5 minutos</option>
-                    <option value="5.2">5-10 minutos</option>
-                    <option value="10.5">Más de 10 minutos</option>
-                </select>
-            </div>
-
-            <!-- P6 -->
-            <div class="question-group">
-                <label for="p6">6. ¿Cuántos días a la semana consumes carne?</label>
-                <select name="p6" id="p6" class="form-select" required>
-                    <option value="" disabled selected>Selecciona una opción...</option>
-                    <option value="110.0">0-1 días</option>
-                    <option value="420.0">2-4 días</option>
-                    <option value="890.0">Todos los días</option>
-                </select>
-            </div>
-
-            <!-- P7 -->
-            <div class="question-group">
-                <label for="p7">7. ¿Reciclas en tu hogar?</label>
-                <select name="p7" id="p7" class="form-select" required>
-                    <option value="" disabled selected>Selecciona una opción...</option>
-                    <option value="15.4">Siempre</option>
-                    <option value="160.8">A veces</option>
-                    <option value="358.0">Nunca</option>
-                </select>
-            </div>
-
-            <!-- P8 -->
-            <div class="question-group">
-                <label for="p8">8. ¿Qué productos retornables utilizas normalmente?</label>
-                <select name="p8" id="p8" class="form-select" required>
-                    <option value="" disabled selected>Selecciona una opción...</option>
-                    <option value="0.5">Botella reutilizable</option>
-                    <option value="24.0">Ambas</option>
-                    <option value="58.0">Botella desechable</option>
-                </select>
-            </div>
-
-            <!-- P9 -->
-            <div class="question-group">
-                <label for="p9">9. ¿Con qué frecuencia compras ropa?</label>
-                <select name="p9" id="p9" class="form-select" required>
-                    <option value="" disabled selected>Selecciona una opción...</option>
-                    <option value="25.0">Solo cuando necesito</option>
-                    <option value="115.0">Varias veces al año</option>
-                    <option value="340.0">Muy frecuentemente</option>
-                </select>
-            </div>
-
-            <!-- P10 -->
-            <div class="question-group">
-                <label for="p10">10. ¿Con qué frecuencia haces uso de papel en tus actividades diarias?</label>
-                <select name="p10" id="p10" class="form-select" required>
-                    <option value="" disabled selected>Selecciona una opción...</option>
-                    <option value="2.1">Casi nunca</option>
-                    <option value="18.5">A veces</option>
-                    <option value="45.5">Frecuentemente</option>
-                </select>
-            </div>
-
-        </div>
-
-        <button type="submit" class="btn-submit">
-            ⚡ Calcular Huella de Carbono
-        </button>
-    </form>
+    @if($showQuestionnaire)
+        <a href="{{ route('student.dashboard') }}" class="carbon-btn carbon-btn-secondary" style="margin-top:16px; width:100%;">← Volver al panel</a>
+    @endif
 </div>
+
+@if($showQuestionnaire)
+<script>
+    const questions = Array.from(document.querySelectorAll('.question'));
+    const progressBar = document.getElementById('progressBar');
+    let current = 0;
+
+    function showQuestion(index) {
+        questions[current].classList.remove('active');
+        current = index;
+        questions[current].classList.add('active');
+        progressBar.style.width = `${((current + 1) / questions.length) * 100}%`;
+    }
+
+    document.querySelectorAll('.next').forEach(button => button.addEventListener('click', () => {
+        const select = questions[current].querySelector('select');
+        if (!select.value) { select.reportValidity(); return; }
+        showQuestion(current + 1);
+    }));
+    document.querySelectorAll('.previous').forEach(button => button.addEventListener('click', () => showQuestion(current - 1)));
+    progressBar.style.width = `${100 / questions.length}%`;
+</script>
+@endif
 @endsection

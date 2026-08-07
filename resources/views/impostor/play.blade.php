@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="csrf-token" content="{{ csrf_token() }}"><title>Juego del Impostor | IT Conecta</title>
+    <style>
+        *{box-sizing:border-box}body{margin:0;min-height:100vh;padding:14px;font-family:"Segoe UI",Arial,sans-serif;color:#064e3b;background:linear-gradient(145deg,#ecfdf5,#a7f3d0)}.page{width:min(650px,100%);margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}.back,.refresh{min-height:48px;padding:0 14px;display:flex;align-items:center;justify-content:center;border:1px solid #a7f3d0;border-radius:12px;background:#fff;color:#065f46;text-decoration:none;font-weight:800}.card{background:#fff;border-radius:19px;padding:19px;margin-bottom:13px;box-shadow:0 10px 25px rgba(6,78,59,.09)}.role{text-align:center;color:#fff}.role h1{font-size:25px;margin:5px 0 8px}.crew{background:linear-gradient(135deg,#059669,#047857)}.impostor{background:linear-gradient(135deg,#dc2626,#991b1b)}.phase{display:inline-flex;padding:5px 10px;border-radius:99px;background:#fef3c7;color:#92400e;font-size:12px;font-weight:850}h2{font-size:19px;margin:0 0 9px}p{line-height:1.5}.input{width:100%;min-height:52px;border:2px solid #a7f3d0;border-radius:12px;padding:12px;font-size:16px}.btn{width:100%;min-height:54px;border:0;border-radius:13px;margin-top:10px;background:#059669;color:#fff;font-size:16px;font-weight:850;cursor:pointer}.btn:disabled{opacity:.55}.vote{background:#f59e0b;margin-top:8px}.clues{list-style:none;padding:0;margin:0;display:grid;gap:8px}.clues li{padding:11px;border-radius:10px;background:#f8fafc}.alert{padding:12px;border-radius:11px;margin-bottom:12px;font-weight:750}.success{background:#dcfce7;color:#166534}.error{background:#fee2e2;color:#991b1b}.muted{color:#64748b;font-size:13px}
+    </style>
+</head>
+<body><main class="page">
+    <nav class="top"><strong>🎭 Juego del Impostor</strong><a class="refresh" href="{{ route('student.impostor.show',$game) }}">Actualizar</a></nav>
+    @if(session('success'))<div class="alert success">{{ session('success') }}</div>@endif @if(session('error'))<div class="alert error">{{ session('error') }}</div>@endif
+    @if($errors->any())<div class="alert error">No fue posible registrar la respuesta. Actualiza la pantalla e inténtalo nuevamente.</div>@endif
+    <section class="card role {{ $participant->id === $game->impostor_id ? 'impostor' : 'crew' }}">
+        @if($participant->id === $game->impostor_id)<div>😈 TU ROL</div><h1>Eres el impostor</h1><p>No conoces la palabra. Escucha las pistas e intenta pasar desapercibido.</p>@else<div>🌱 PALABRA SECRETA</div><h1>{{ $game->word }}</h1><p>Entrega una pista relacionada sin decir la palabra.</p>@endif
+    </section>
+    <section class="card"><span class="phase">{{ $game->status === 'playing' ? 'Fase de pistas' : 'Fase de votación' }}</span>
+        @if($game->status === 'playing')<h2 style="margin-top:13px">Escribe una pista</h2>@if($hasClue)<p class="alert success">Tu pista ya fue enviada. Espera a que el profesor inicie la votación.</p>@else<form method="POST" action="{{ route('student.impostor.clue',$game) }}" onsubmit="this.querySelector('button').disabled=true">@csrf<input class="input" name="clue" maxlength="120" autocomplete="off" required placeholder="Una palabra o frase breve"><button class="btn">Enviar pista</button></form>@endif
+        @else<h2 style="margin-top:13px">¿Quién es el impostor?</h2>@if($hasVoted)<p class="alert success">Tu voto quedó registrado. Espera el resultado del profesor.</p>@else @foreach($game->room->participants as $suspect) @if($suspect->id !== $participant->id)<form method="POST" action="{{ route('student.impostor.vote',$game) }}" onsubmit="this.querySelector('button').disabled=true">@csrf<input type="hidden" name="suspect_id" value="{{ $suspect->id }}"><button type="submit" class="btn vote">Votar por {{ $suspect->name }}</button></form>@endif @endforeach @endif @endif
+    </section>
+    <section class="card"><h2>Pistas compartidas</h2><ul class="clues">@forelse($game->clues as $clue)<li><strong>{{ $clue->participant?->name }}:</strong> {{ $clue->clue }}</li>@empty<li class="muted">Todavía no hay pistas.</li>@endforelse</ul></section>
+    <a class="back" href="{{ route('student.dashboard') }}">← Volver al panel</a>
+</main></body></html>

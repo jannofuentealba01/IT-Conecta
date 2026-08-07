@@ -7,7 +7,6 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use App\Models\Activity;
 
 class User extends Authenticatable
 {
@@ -23,6 +22,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'rol',
+        'approval_status',
+        'approved_at',
+        'approved_by',
     ];
 
     /**
@@ -45,26 +48,39 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'approved_at' => 'datetime',
         ];
     }
 
-public function activities()
-{
-    return $this->belongsToMany(Activity::class, 'user_activities')
-        ->withPivot('points_earned', 'co2_reduced')
-        ->withTimestamps();
+    public function activities()
+    {
+        return $this->belongsToMany(Activity::class, 'user_activities')
+            ->withPivot('points_earned', 'co2_reduced')
+            ->withTimestamps();
+    }
+
+    public function totalPoints()
+    {
+        return $this->activities()->sum('user_activities.points_earned');
+    }
+
+    public function totalCO2()
+    {
+        return $this->activities()->sum('user_activities.co2_reduced');
+    }
+
+    public function courses()
+    {
+        return $this->hasMany(Course::class);
+    }
+
+    public function rooms()
+    {
+        return $this->hasMany(Room::class);
+    }
+
+    public function createdActivities()
+    {
+        return $this->hasMany(Activity::class);
+    }
 }
-
-public function totalPoints()
-{
-    return $this->activities()->sum('user_activities.points_earned');
-}
-
-
-public function totalCO2()
-{
-    return $this->activities()->sum('user_activities.co2_reduced');
-}
-
-}
-

@@ -105,6 +105,7 @@
             transition: all 0.2s ease;
             border: none;
             cursor: pointer;
+            min-height: 48px;
         }
 
         .logout-btn:hover {
@@ -208,9 +209,23 @@
             </div>
 
             <!-- Botón para Salir de la Sala -->
-            <a href="{{ route('room.exit') }}" class="logout-btn">
-                Salir de la sala
-            </a>
+            <form method="POST" action="{{ route('room.exit') }}">
+                @csrf
+                <button type="submit" class="logout-btn" style="border:0; cursor:pointer;">Salir de la sala</button>
+            </form>
+        </div>
+        @elseif (auth()->check())
+        <div class="user-badge">
+            <div class="user-info">
+                <span>👤 {{ auth()->user()->name }}</span>
+                <span class="points-highlight">Área docente</span>
+            </div>
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" class="logout-btn" style="border:0; cursor:pointer;">
+                    Cerrar sesión
+                </button>
+            </form>
         </div>
         @endif
     </header>

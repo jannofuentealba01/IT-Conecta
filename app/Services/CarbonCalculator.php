@@ -4,27 +4,28 @@ namespace App\Services;
 
 class CarbonCalculator
 {
-    public function calculate(array $answers)
+    public function __construct(private readonly CarbonQuestionnaire $questionnaire) {}
+
+    public function calculate(array $answers): float
     {
-        // transporte (P1 * P2)
-        $transporte = ($answers['p1'] ?? 0) * ($answers['p2'] ?? 0);
+        $transport = $this->questionnaire->factor('p1', $answers['p1'])
+            * $this->questionnaire->factor('p2', $answers['p2']);
 
-        // energía
-        $energia = ($answers['p3'] ?? 0) + ($answers['p4'] ?? 0);
+        $otherSources = 0.0;
+        foreach (range(3, 10) as $number) {
+            $key = 'p'.$number;
+            $otherSources += $this->questionnaire->factor($key, $answers[$key]);
+        }
 
-        // agua
-        $agua = $answers['p5'] ?? 0;
+        return round($transport + $otherSources, 2);
+    }
 
-        // alimentación
-        $alimentacion = $answers['p6'] ?? 0;
-
-        // residuos
-        $residuos = ($answers['p7'] ?? 0) + ($answers['p8'] ?? 0);
-
-        // consumo
-        $consumo = ($answers['p9'] ?? 0) + ($answers['p10'] ?? 0);
-
-        // total
-        return $transporte + $energia + $agua + $alimentacion + $residuos + $consumo;
+    public function classification(float $total): array
+    {
+        return match (true) {
+            $total < 600 => ['key' => 'low', 'icon' => '🌱', 'message' => 'Muy bien, tienes hábitos sustentables.'],
+            $total < 1200 => ['key' => 'medium', 'icon' => '⚖️', 'message' => 'Vas bien, pero todavía puedes mejorar.'],
+            default => ['key' => 'high', 'icon' => '🔥', 'message' => 'Tu impacto estimado es alto; trabajaremos para reducirlo.'],
+        };
     }
 }

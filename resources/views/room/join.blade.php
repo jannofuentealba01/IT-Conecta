@@ -85,7 +85,7 @@
         👤 Completa tu Perfil
     </h2>
     <p style="color: #6b7280; font-size: 14px; margin-bottom: 25px;">
-        Ingresa tus datos para registrar tus respuestas y puntos.
+        Ingresa tu nombre para registrar tus respuestas y puntos en {{ $room->course?->name ?? $room->name ?? 'este curso' }}.
     </p>
 
     <!-- FORMULARIO DE REGISTRO DE PARTICIPANTE -->
@@ -100,21 +100,16 @@
                 id="name" 
                 class="form-input" 
                 placeholder="Ej: Alejandro Silva" 
+                value="{{ old('name') }}"
+                autocomplete="name"
+                minlength="2"
+                maxlength="100"
                 required 
                 autofocus
             >
-        </div>
-
-        <div class="form-group">
-            <label for="course">Curso o Nivel:</label>
-            <input 
-                type="text" 
-                name="course" 
-                id="course" 
-                class="form-input" 
-                placeholder="Ej: 1° Medio A" 
-                required
-            >
+            @error('name')
+                <span style="color:#b91c1c; font-size:13px;">{{ $message }}</span>
+            @enderror
         </div>
 
         <button type="submit" class="btn-enter">

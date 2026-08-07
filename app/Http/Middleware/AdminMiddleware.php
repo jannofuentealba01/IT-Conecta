@@ -14,15 +14,25 @@ class AdminMiddleware
      * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
-{
+    {
 
-    if (!auth()->check()) {
-        return redirect('/login');
-    }
-    if (auth()->user()->rol !== 'admin') {
-        return redirect('/dashboard')->with('error', 'No autorizado');
-    }
+        if (! auth()->check()) {
+            return redirect('/login');
+        }
+        if (! in_array(auth()->user()->rol, ['admin', 'profesor'], true)) {
+            return redirect('/')->with('error', 'No autorizado');
+        }
 
-    return $next($request);
-}
+        if (auth()->user()->rol === 'profesor' && auth()->user()->approval_status !== 'approved') {
+            auth()->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('login')->withErrors([
+                'email' => 'Tu cuenta docente todavía está pendiente de aprobación.',
+            ]);
+        }
+
+        return $next($request);
+    }
 }

@@ -207,6 +207,7 @@
 
             <div class="card">
                 <h2>Crea tu cuenta escolar</h2>
+                <p style="margin:-8px 0 20px;color:#64748b;line-height:1.5;">La cuenta quedará pendiente hasta que un administrador confirme tu acceso como profesor.</p>
 
                 <form method="POST" action="{{ route('register') }}">
                     @csrf

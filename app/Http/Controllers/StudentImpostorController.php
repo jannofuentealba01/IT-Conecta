@@ -29,8 +29,20 @@ class StudentImpostorController extends Controller
     public function show(Request $request, int $game)
     {
         $participant = $this->participant($request);
-        $game = $this->gameForParticipant($game, $participant)
-            ->load(['clues.participant', 'votes', 'room.participants']);
+        $service = app(ImpostorGameService::class);
+        try {
+            $game = $service->synchronize($this->gameForParticipant($game, $participant))
+                ->load(['clues.participant', 'votes', 'room.participants', 'impostors']);
+        } catch (DomainException $exception) {
+            return redirect()->route('student.dashboard')->with(
+                'error',
+                'El estado del juego se está actualizando. Intenta ingresar nuevamente en unos segundos.'
+            );
+        }
+
+        if ($game->status === 'waiting') {
+            return view('impostor.lobby', compact('participant'));
+        }
 
         if ($game->status === 'finished') {
             return redirect()->route('student.impostor.results', $game);
@@ -47,7 +59,11 @@ class StudentImpostorController extends Controller
     public function clue(Request $request, int $game)
     {
         $participant = $this->participant($request);
-        $game = $this->gameForParticipant($game, $participant);
+        try {
+            $game = app(ImpostorGameService::class)->synchronize($this->gameForParticipant($game, $participant));
+        } catch (DomainException $exception) {
+            return redirect()->route('student.dashboard')->with('error', 'No fue posible actualizar la partida. Intenta ingresar nuevamente.');
+        }
 
         if ($game->status !== 'playing' || ! $game->room->isOpen()) {
             return back()->with('error', 'La fase de pistas ya terminó.');
@@ -70,7 +86,11 @@ class StudentImpostorController extends Controller
     public function vote(Request $request, int $game)
     {
         $participant = $this->participant($request);
-        $game = $this->gameForParticipant($game, $participant);
+        try {
+            $game = app(ImpostorGameService::class)->synchronize($this->gameForParticipant($game, $participant));
+        } catch (DomainException $exception) {
+            return redirect()->route('student.dashboard')->with('error', 'No fue posible actualizar la votación. Intenta ingresar nuevamente.');
+        }
 
         if ($game->status !== 'voting' || ! $game->room->isOpen()) {
             return back()->with('error', 'La votación no está disponible.');

@@ -20,12 +20,12 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
-            border-bottom: 2px solid #e6f4ea;
+            border-bottom: 2px solid var(--brand-green-soft-border);
             padding-bottom: 15px;
         }
 
         .form-title {
-            color: #0f766e;
+            color: var(--brand-green-dark);
             font-size: 22px;
             font-weight: 800;
             display: flex;
@@ -38,20 +38,20 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background-color: #f3f4f6;
-            color: #4b5563;
+            background-color: var(--surface-muted);
+            color: var(--text-secondary);
             text-decoration: none;
             padding: 8px 14px;
             border-radius: 8px;
             font-weight: 700;
             font-size: 13px;
             transition: all 0.2s ease;
-            border: 1px solid #e5e7eb;
+            border: 1px solid var(--border);
         }
 
         .btn-back:hover {
-            background-color: #e5e7eb;
-            color: #1f2937;
+            background-color: var(--border);
+            color: var(--text-primary);
             transform: translateX(-2px);
         }
 
@@ -66,7 +66,7 @@
         .form-label {
             font-size: 14px;
             font-weight: 700;
-            color: #065f46;
+            color: var(--brand-green-dark);
             display: flex;
             align-items: center;
             gap: 6px;
@@ -76,23 +76,23 @@
         .form-control {
             width: 100%;
             padding: 12px 16px;
-            border: 1.5px solid #a7f3d0;
+            border: 1.5px solid var(--brand-green-soft-border);
             border-radius: 10px;
             font-size: 15px;
-            color: #1f2937;
-            background-color: #fcfdfd;
+            color: var(--text-primary);
+            background-color: var(--surface);
             transition: all 0.2s ease;
             outline: none;
         }
 
         .form-control:focus {
-            border-color: #059669;
+            border-color: var(--brand-green);
             background-color: #white;
             box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
         }
 
         .form-control::placeholder {
-            color: #9ca3af;
+            color: var(--text-secondary);
             font-size: 14px;
         }
 
@@ -106,7 +106,7 @@
         /* BOTÓN ENVIAR FORMULARIO */
         .btn-submit {
             width: 100%;
-            background: linear-gradient(135deg, #059669, #047857);
+            background: linear-gradient(135deg, var(--brand-green), var(--brand-green-dark));
             color: white;
             border: none;
             padding: 14px;
@@ -127,7 +127,7 @@
 
         /* ERRORES DE VALIDACIÓN */
         .error-message {
-            color: #dc2626;
+            color: var(--danger-dark);
             font-size: 13px;
             font-weight: 600;
             margin-top: -4px;

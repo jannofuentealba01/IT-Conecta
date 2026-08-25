@@ -46,8 +46,9 @@ class TeacherRoomController extends Controller
         }
 
         $room->load(['course', 'participants' => fn ($query) => $query->orderBy('name')]);
+        $teacherHasFootprint = auth()->user()->carbonFootprints()->exists();
 
-        return view('teacher.sessions.show', compact('room'));
+        return view('teacher.sessions.show', compact('room', 'teacherHasFootprint'));
     }
 
     public function open(int $room)

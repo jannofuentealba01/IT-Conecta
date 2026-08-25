@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | IT Conecta</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @include('partials.color-tokens')
 
     <style>
         * {
@@ -15,8 +17,8 @@
 
         body {
             min-height: 100vh;
-            background: linear-gradient(135deg, #ecfdf5, #d1fae5, #a7f3d0);
-            color: #064e3b;
+            background: var(--surface-muted);
+            color: var(--text-primary);
             padding: 20px;
         }
 
@@ -50,8 +52,8 @@
 
         .logout {
             text-decoration: none;
-            background: #065f46;
-            color: white;
+            background: var(--brand-blue);
+            color: var(--surface);
             padding: 8px 14px;
             border-radius: 8px;
             font-size: 14px;
@@ -66,7 +68,7 @@
 
         /* CARDS */
         .card {
-            background: white;
+            background: var(--surface);
             border-radius: 14px;
             padding: 18px;
             box-shadow: 0 10px 20px rgba(0,0,0,0.08);
@@ -104,14 +106,16 @@
             justify-content: center;
         }
 
-        .btn-primary {
-            background: #059669;
-            color: white;
-        }
+        .btn-primary { background:var(--brand-blue); color:var(--surface); }
+        .btn-primary:hover { background:var(--brand-blue-dark); }
+        .btn-positive { background:var(--brand-green); color:var(--surface); }
+        .btn-positive:hover { background:var(--brand-green-dark); }
+        .btn-game { background:var(--brand-purple); color:var(--surface); }
+        .btn-game:hover { background:var(--brand-purple-dark); }
 
         .btn-secondary {
-            background: #e5e7eb;
-            color: #065f46;
+            background: var(--border);
+            color: var(--text-primary);
         }
 
         .footprint-summary {
@@ -119,8 +123,8 @@
             justify-content: space-between;
             align-items: center;
             gap: 16px;
-            background: linear-gradient(135deg, #065f46, #047857);
-            color: white;
+            background: linear-gradient(135deg,var(--brand-blue),var(--brand-blue-light));
+            color: var(--surface);
             border-radius: 16px;
             padding: 20px;
             margin-bottom: 20px;
@@ -128,17 +132,22 @@
             flex-wrap: wrap;
         }
 
-        .footprint-low { background:linear-gradient(135deg,#166534,#16a34a); box-shadow:0 10px 24px rgba(22,101,52,.22); }
-        .footprint-medium { background:linear-gradient(135deg,#92400e,#d97706); box-shadow:0 10px 24px rgba(146,64,14,.22); }
-        .footprint-high { background:linear-gradient(135deg,#991b1b,#dc2626); box-shadow:0 10px 24px rgba(153,27,27,.22); }
+        .footprint-low { background:var(--impact-low); box-shadow:0 10px 24px color-mix(in srgb,var(--impact-low) 28%,transparent); }
+        .footprint-medium { background:var(--impact-medium); color:var(--text-primary); box-shadow:0 10px 24px color-mix(in srgb,var(--impact-medium) 32%,transparent); }
+        .footprint-high { background:var(--impact-high); box-shadow:0 10px 24px color-mix(in srgb,var(--impact-high) 28%,transparent); }
         .footprint-level { display:inline-flex; margin-top:7px; padding:4px 9px; border-radius:999px; background:rgba(255,255,255,.2); font-size:12px; font-weight:850; }
 
         .footprint-summary strong { font-size: 27px; display: block; margin-top: 4px; }
-        .footprint-summary a { color:#065f46; background:#fff; padding:10px 14px; border-radius:9px; text-decoration:none; font-weight:750; }
+        .footprint-summary a { color:var(--brand-blue-dark); background:var(--surface); padding:10px 14px; border-radius:9px; text-decoration:none; font-weight:750; }
 
         .progress-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px; }
-        .progress-stat { background:#fff; border:1px solid #d1fae5; border-radius:13px; padding:14px; text-align:center; }
-        .progress-stat strong { display:block; color:#047857; font-size:23px; margin-top:4px; }
+        .progress-stat { background:var(--surface); border:1px solid var(--border); border-radius:13px; padding:14px; text-align:center; }
+        .progress-stat strong { display:block; color:var(--brand-blue-dark); font-size:23px; margin-top:4px; }
+        .exit-room { display:block;width:100%;min-height:48px;text-align:center;background:var(--danger-soft);color:var(--danger-dark);border:1px solid var(--danger);padding:12px;border-radius:12px;font-weight:600;font-size:14px;transition:all .2s;cursor:pointer; }
+        .exit-room:hover { background:var(--danger);color:var(--surface); }
+        .dashboard-alert { padding:13px 15px; border-radius:12px; margin-bottom:18px; font-size:14px; font-weight:700; }
+        .dashboard-alert-error { background:var(--danger-soft); color:var(--danger-dark); border:1px solid var(--danger); }
+        .dashboard-alert-success { background:var(--positive-soft); color:var(--brand-green-dark); border:1px solid var(--brand-green); }
 
         /* FOOTER */
         .footer {
@@ -150,11 +159,19 @@
 
         /* MOBILE */
         @media (max-width: 600px) {
+            .container { display:flex; flex-direction:column; }
             .header {
                 flex-direction: column;
                 gap: 10px;
+                order:0;
             }
-            .progress-stats { grid-template-columns:1fr; }
+            .footprint-summary { order:1; }
+            .grid { order:2; grid-template-columns:1fr; }
+            .grid .card { min-height:150px; }
+            .activities-module { display:none; }
+            .progress-stats { order:3; grid-template-columns:1fr; margin-top:20px; margin-bottom:0; }
+            .room-exit-wrap { order:4; }
+            .footer { order:5; }
             .footprint-summary a { width:100%; text-align:center; min-height:48px; display:flex; align-items:center; justify-content:center; }
         }
     </style>
@@ -172,8 +189,12 @@
             <h1>IT Conecta</h1>
         </div>
 
-        <div class="user-info">👤 {{ $participant->name }} · {{ $participant->room->course?->name ?? $participant->course }}</div>
     </div>
+
+    @include('student.partials.identity-bar', ['participant' => $participant])
+
+    @if(session('error'))<div class="dashboard-alert dashboard-alert-error">{{ session('error') }}</div>@endif
+    @if(session('success'))<div class="dashboard-alert dashboard-alert-success">{{ session('success') }}</div>@endif
 
     <div class="progress-stats">
         <div class="progress-stat">Puntos por acciones<strong>{{ $actionPoints }}</strong></div>
@@ -211,11 +232,16 @@
 
         <!-- 2. ACTIVIDADES -->
         <div class="card">
+            <div><h2>🧭 EcoBúsqueda</h2><p>Participa en la búsqueda temporizada y escanea los QR ambientales.</p></div>
+            <a href="{{ route('student.eco-hunt.index') }}" class="btn-positive">Entrar a EcoBúsqueda</a>
+        </div>
+
+        <div class="card activities-module">
             <div>
                 <h2>📋 Actividades</h2>
                 <p>Busca los códigos QR y realiza las acciones ecológicas de tu sala.</p>
             </div>
-            <a href="{{ route('activities.index') }}" class="btn-primary">Ver actividades</a>
+            <a href="{{ route('activities.index') }}" class="btn-positive">Ver actividades</a>
         </div>
 
         <!-- 3. JUEGO DEL IMPOSTOR -->
@@ -224,7 +250,7 @@
                 <h2>🎭 Juego del Impostor</h2>
                 <p>Participa en la ronda que inicia y controla tu profesor.</p>
             </div>
-            <a href="{{ route('student.impostor.lobby') }}" class="btn-primary">Entrar al juego</a>
+            <a href="{{ route('student.impostor.lobby') }}" class="btn-game">Entrar al juego</a>
         </div>
 
         <!-- 4. PUNTOS -->
@@ -239,13 +265,10 @@
     </div>
 
 <!-- BOTÓN SALIR DE LA SALA -->
-    <div style="margin-top: 18px;">
-        <form method="POST" action="{{ route('room.exit') }}">
+    <div class="room-exit-wrap" style="margin-top: 18px;">
+        <form method="POST" action="{{ route('room.exit') }}" onsubmit="return confirm('¿Salir de la sala? Tendrás que volver a ingresar con el código.');">
            @csrf
-        <button type="submit"
-           style="display: block; width: 100%; min-height:48px; text-align: center; background: rgba(239, 68, 68, 0.15); color: #b91c1c; border: 1px solid rgba(239, 68, 68, 0.3); padding: 12px; border-radius: 12px; font-weight: 600; font-size: 14px; transition: all 0.2s; cursor:pointer;"
-           onmouseover="this.style.background='rgba(239, 68, 68, 0.25)'; this.style.color='#ffffff';"
-           onmouseout="this.style.background='rgba(239, 68, 68, 0.15)'; this.style.color='#b91c1c';">
+        <button type="submit" class="exit-room">
             🚪 Salir de la Sala
         </button>
         </form>

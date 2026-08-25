@@ -52,6 +52,8 @@ class Room extends Model
         return $this->hasMany(ImpostorGame::class);
     }
 
+    public function ecoHunts() { return $this->hasMany(EcoHunt::class); }
+
     public function activities()
     {
         return $this->belongsToMany(Activity::class, 'room_activity')

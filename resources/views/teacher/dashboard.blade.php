@@ -21,19 +21,23 @@
 
     <div class="teacher-grid" style="margin-bottom:20px;">
         <a href="{{ route('teacher.courses.index') }}" class="teacher-card" style="text-decoration:none;">
-            <h2 style="color:#065f46; font-size:18px; margin:0 0 8px;">📚 Cursos y sesiones</h2>
+            <h2 style="color:var(--brand-blue-dark); font-size:18px; margin:0 0 8px;">📚 Cursos y sesiones</h2>
             <p class="teacher-meta">Crea cursos, genera códigos y abre sesiones para tus estudiantes.</p>
         </a>
         <a href="{{ route('teacher.activities.index') }}" class="teacher-card" style="text-decoration:none;">
-            <h2 style="color:#065f46; font-size:18px; margin:0 0 8px;">🌱 Catálogo de actividades</h2>
+            <h2 style="color:var(--brand-green-dark); font-size:18px; margin:0 0 8px;">🌱 Catálogo de actividades</h2>
             <p class="teacher-meta">Revisa las acciones ambientales disponibles.</p>
+        </a>
+        <a href="{{ route('teacher.instructions') }}" class="teacher-card" style="text-decoration:none;">
+            <h2 style="color:var(--brand-blue-dark); font-size:18px; margin:0 0 8px;">❓ Instrucciones de uso</h2>
+            <p class="teacher-meta">Aprende el flujo de la aplicación y las reglas del Juego del Impostor.</p>
         </a>
     </div>
 
     <div class="teacher-card">
         <div class="teacher-header" style="margin-bottom:14px;">
-            <div><h2 style="color:#065f46; font-size:19px; margin:0;">Sesiones recientes</h2></div>
-            <a href="{{ route('teacher.courses.index') }}" style="color:#047857; font-weight:700;">Ver todos los cursos</a>
+            <div><h2 style="color:var(--brand-blue-dark); font-size:19px; margin:0;">Sesiones recientes</h2></div>
+            <a href="{{ route('teacher.courses.index') }}" style="color:var(--brand-blue-dark); font-weight:700;">Ver todos los cursos</a>
         </div>
         <div class="teacher-list">
             @forelse($recentRooms as $room)

@@ -13,7 +13,7 @@
                 <div style="flex:1; min-width:240px;">
                     <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:5px;"><h3 style="margin:0;">{{ $activity->name }}</h3><span class="teacher-badge status-open">{{ $activity->category }}</span>@if(!$activity->is_active)<span class="teacher-badge status-archived">Inactiva</span>@endif</div>
                     <p class="teacher-meta" style="margin-bottom:8px;">{{ $activity->instructions }}</p>
-                    <strong style="color:#d97706; font-size:13px;">⭐ {{ $impactLabels[$activity->impact_level] ?? $activity->points.' pts' }}</strong>
+                    <strong style="color:var(--warning-orange); font-size:13px;">⭐ {{ $impactLabels[$activity->impact_level] ?? $activity->points.' pts' }}</strong>
                     <span style="color:#9ca3af; font-size:12px; margin-left:8px;">{{ $activity->user_id ? 'Creada por ti' : 'Actividad global' }}</span>
                 </div>
                 @if($activity->user_id === auth()->id() || (auth()->user()->rol === 'admin' && !$activity->user_id))

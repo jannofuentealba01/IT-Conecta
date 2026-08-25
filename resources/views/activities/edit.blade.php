@@ -24,15 +24,15 @@
 .form-title {
     font-size: 22px;
     font-weight: 700;
-    color: #065f46;
+    color: var(--brand-green-dark);
 }
 
 .btn-back {
-    background: #e5e7eb;
+    background: var(--border);
     padding: 8px 14px;
     border-radius: 10px;
     text-decoration: none;
-    color: #374151;
+    color: var(--text-secondary);
     font-size: 14px;
 }
 
@@ -44,14 +44,14 @@
     display: block;
     font-weight: 600;
     margin-bottom: 6px;
-    color: #374151;
+    color: var(--text-secondary);
 }
 
 .form-control {
     width: 100%;
     padding: 10px 12px;
     border-radius: 10px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--border);
     outline: none;
 }
 
@@ -66,7 +66,7 @@
 
 .btn-submit {
     width: 100%;
-    background: #10b981;
+    background: var(--brand-green);
     color: white;
     padding: 12px;
     border-radius: 12px;

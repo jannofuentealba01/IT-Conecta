@@ -48,6 +48,9 @@ class Activity extends Model
         return $this->hasMany(ActivityCompletion::class);
     }
 
+    public function ecoProfile() { return $this->hasOne(EcoActivityProfile::class); }
+    public function ecoHunts() { return $this->belongsToMany(EcoHunt::class, 'eco_hunt_activity')->withPivot('is_active')->withTimestamps(); }
+
     public function users()
     {
         return $this->belongsToMany(User::class, 'user_activities')

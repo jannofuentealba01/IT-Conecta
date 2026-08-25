@@ -15,8 +15,8 @@
 
     .room-badge {
         display: inline-block;
-        background: #e6f4ea;
-        color: #065f46;
+        background: var(--info-soft);
+        color: var(--brand-blue-dark);
         padding: 6px 14px;
         border-radius: 20px;
         font-size: 13px;
@@ -35,7 +35,7 @@
     .form-group label {
         font-size: 13.5px;
         font-weight: 700;
-        color: #065f46;
+        color: var(--text-primary);
     }
 
     .form-input {
@@ -51,13 +51,13 @@
     }
 
     .form-input:focus {
-        border-color: #059669;
+        border-color: var(--brand-blue);
         box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
     }
 
     .btn-enter {
         width: 100%;
-        background: linear-gradient(135deg, #059669, #047857);
+        background: linear-gradient(135deg, var(--brand-blue), var(--brand-blue-dark));
         color: white;
         border: none;
         padding: 14px;
@@ -81,7 +81,7 @@
         📍 Sala: <strong>{{ $code }}</strong> @if($room->name) ({{ $room->name }}) @endif
     </div>
 
-    <h2 style="color: #0f766e; font-size: 24px; font-weight: 800; margin-bottom: 8px;">
+    <h2 style="color: var(--brand-blue-dark); font-size: 24px; font-weight: 800; margin-bottom: 8px;">
         👤 Completa tu Perfil
     </h2>
     <p style="color: #6b7280; font-size: 14px; margin-bottom: 25px;">

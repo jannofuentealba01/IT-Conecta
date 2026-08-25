@@ -79,6 +79,11 @@ class User extends Authenticatable
         return $this->hasMany(Room::class);
     }
 
+    public function carbonFootprints()
+    {
+        return $this->hasMany(TeacherCarbonFootprint::class);
+    }
+
     public function createdActivities()
     {
         return $this->hasMany(Activity::class);

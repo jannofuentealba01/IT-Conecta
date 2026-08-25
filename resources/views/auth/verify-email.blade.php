@@ -4,9 +4,9 @@
     min-height: 100vh;
 
     background:
-        linear-gradient(to bottom, rgba(0,0,0,0) 25%, #065f46 55%),
+        linear-gradient(to bottom, rgba(0,0,0,0) 25%, var(--brand-blue-dark) 55%),
         url('/images/reciclado.png'),
-        linear-gradient(135deg, #0f766e, #065f46, #022c22);
+        linear-gradient(135deg, var(--brand-blue), var(--brand-blue-dark), var(--text-primary));
 
     background-size: 
         cover,        /* imagen */
@@ -75,7 +75,7 @@
         }
 
         .card h2 {
-            color: #0f766e;
+            color: var(--brand-blue-dark);
             margin-bottom: 15px;
             font-size: 16px;
             text-transform: uppercase;
@@ -104,8 +104,8 @@
         /* Mensaje de éxito al reenviar */
         .success-status {
             background-color: #ecfdf5;
-            border: 1px solid #10b981;
-            color: #065f46;
+            border: 1px solid var(--brand-green);
+            color: var(--brand-green-dark);
             padding: 12px;
             border-radius: 10px;
             font-size: 13.5px;
@@ -128,7 +128,7 @@
             width: 100%;
             padding: 14px;
             border-radius: 12px;
-            background: linear-gradient(135deg, #059669, #047857);
+            background: linear-gradient(135deg, var(--brand-blue), var(--brand-blue-dark));
             color: white;
             font-weight: 700;
             font-size: 15px;

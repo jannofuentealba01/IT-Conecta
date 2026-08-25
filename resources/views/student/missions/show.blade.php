@@ -1,16 +1,16 @@
 @extends('layouts.app')
 @section('content')
 <style>
-    .reveal-shell{max-width:650px;margin:0 auto;padding-bottom:18px}.reveal-card{background:linear-gradient(145deg,#fff,#ecfdf5);border:2px solid #6ee7b7;border-radius:22px;padding:26px;text-align:center;box-shadow:0 16px 38px rgba(6,78,59,.12)}.reveal-icon{font-size:48px}.reveal-instruction{background:#fff;border-radius:14px;padding:20px;color:#064e3b;font-size:20px;line-height:1.5;font-weight:750;margin:20px 0;border:1px solid #d1fae5}.reveal-btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:54px;background:#059669;color:#fff;text-decoration:none;padding:13px 16px;border:0;border-radius:12px;font-weight:800;font-size:16px;margin-top:14px;cursor:pointer;touch-action:manipulation}.reveal-btn-secondary{background:#ecfdf5;color:#047857;border:1px solid #a7f3d0}.completion-success{background:#dcfce7;border:1px solid #4ade80;color:#166534;padding:16px;border-radius:13px;font-weight:750;margin-top:18px}.completion-warning{background:#fffbeb;border:1px solid #fbbf24;color:#92400e;padding:16px;border-radius:13px;margin-top:18px;line-height:1.5}@media(max-width:640px){.reveal-shell{margin:-5px -4px 0}.reveal-card{padding:21px 16px;border-radius:18px}.reveal-instruction{font-size:18px;padding:17px}.reveal-icon{font-size:42px}}
+    .reveal-shell{max-width:650px;margin:0 auto;padding-bottom:18px}.reveal-card{background:linear-gradient(145deg,var(--surface),var(--positive-soft));border:2px solid var(--brand-green);border-radius:22px;padding:26px;text-align:center;box-shadow:0 16px 38px rgba(17,24,39,.12)}.reveal-icon{font-size:48px}.reveal-instruction{background:var(--surface);border-radius:14px;padding:20px;color:var(--text-primary);font-size:20px;line-height:1.5;font-weight:750;margin:20px 0;border:1px solid var(--border)}.reveal-btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:54px;background:var(--brand-green);color:var(--surface);text-decoration:none;padding:13px 16px;border:0;border-radius:12px;font-weight:800;font-size:16px;margin-top:14px;cursor:pointer;touch-action:manipulation}.reveal-btn:hover{background:var(--brand-green-dark)}.reveal-btn-secondary{background:var(--surface);color:var(--brand-blue-dark);border:1px solid var(--brand-blue-light)}.completion-success{background:var(--positive-soft);border:1px solid var(--brand-green);color:var(--brand-green-dark);padding:16px;border-radius:13px;font-weight:750;margin-top:18px}.completion-warning{background:var(--warning-soft);border:1px solid var(--warning-orange);color:var(--text-primary);padding:16px;border-radius:13px;margin-top:18px;line-height:1.5}@media(max-width:640px){.reveal-shell{margin:-5px -4px 0}.reveal-card{padding:21px 16px;border-radius:18px}.reveal-instruction{font-size:18px;padding:17px}.reveal-icon{font-size:42px}}
 </style>
 <div class="reveal-shell">
     <div class="reveal-card">
         <div class="reveal-icon">🌱</div>
-        <p style="color:#059669;font-weight:800;text-transform:uppercase;font-size:13px;margin:4px 0;">Misión encontrada</p>
+        <p style="color:var(--brand-green-dark);font-weight:800;text-transform:uppercase;font-size:13px;margin:4px 0;">Misión encontrada</p>
         <h1 style="color:#064e3b;font-size:27px;margin:7px 0;">{{ $mission->activity->name }}</h1>
-        <span style="display:inline-block;background:#d1fae5;color:#047857;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:800;">{{ $mission->activity->category }}</span>
+        <span style="display:inline-block;background:var(--positive-soft);color:var(--brand-green-dark);padding:5px 10px;border-radius:999px;font-size:12px;font-weight:800;">{{ $mission->activity->category }}</span>
         <div class="reveal-instruction">{{ $mission->activity->instructions }}</div>
-        <p style="color:#d97706;font-weight:850;font-size:19px;">⭐ {{ $mission->activity->points }} puntos</p>
+        <p style="color:var(--warning-orange);font-weight:850;font-size:19px;">⭐ {{ $mission->activity->points }} puntos</p>
         @if($alreadyCompleted)
             <div class="completion-success">✅ Ya completaste esta misión hoy. Podrás repetirla otro día.</div>
         @elseif(!$hasFootprint)
@@ -20,7 +20,7 @@
             <form method="POST" action="{{ route('student.missions.complete', $mission->qr_token) }}" id="completionForm">
                 @csrf
                 <div style="margin-top:18px;padding:17px;border-radius:14px;background:#fff;border:1px solid #a7f3d0;text-align:left;">
-                    <strong style="display:block;color:#065f46;font-size:17px;margin-bottom:5px;">Comprueba lo que realizaste</strong>
+                    <strong style="display:block;color:var(--brand-green-dark);font-size:17px;margin-bottom:5px;">Comprueba lo que realizaste</strong>
                     <p style="color:#64748b;font-size:13px;line-height:1.45;margin:0 0 15px;">Responde correctamente las dos preguntas antes de registrar la misión.</p>
                     @error('verification')
                         <div style="background:#fee2e2;color:#991b1b;padding:11px;border-radius:9px;margin-bottom:13px;">{{ $message }}</div>
@@ -48,7 +48,7 @@
         @endif
 
         @if(session('completion_message'))
-            <div style="margin-top:18px;padding:18px;border-radius:14px;background:#fffbeb;border:1px solid #fbbf24;color:#78350f;line-height:1.55;text-align:left;">
+            <div style="margin-top:18px;padding:18px;border-radius:14px;background:var(--warning-soft);border:1px solid var(--warning-orange);color:var(--text-primary);line-height:1.55;text-align:left;">
                 <strong style="display:block;margin-bottom:6px;font-size:17px;">🌍 El impacto de tu acción</strong>
                 {{ session('completion_message') }}
             </div>

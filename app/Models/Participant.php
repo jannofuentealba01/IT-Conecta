@@ -71,6 +71,11 @@ class Participant extends Model
         return $this->hasMany(PointTransaction::class);
     }
 
+    public function ecoHuntCompletions()
+    {
+        return $this->hasMany(EcoHuntCompletion::class);
+    }
+
     public function totalPoints(): int
     {
         return (int) $this->pointTransactions()->sum('points');

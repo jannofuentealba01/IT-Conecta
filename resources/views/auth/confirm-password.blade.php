@@ -4,9 +4,9 @@
     min-height: 100vh;
 
     background:
-        linear-gradient(to bottom, rgba(0,0,0,0) 25%, #065f46 55%),
+        linear-gradient(to bottom, rgba(0,0,0,0) 25%, var(--brand-blue-dark) 55%),
         url('/images/reciclado.png'),
-        linear-gradient(135deg, #0f766e, #065f46, #022c22);
+        linear-gradient(135deg, var(--brand-blue), var(--brand-blue-dark), var(--text-primary));
 
     background-size: 
         cover,        /* imagen */
@@ -75,7 +75,7 @@
         }
 
         .card h2 {
-            color: #0f766e;
+            color: var(--brand-blue-dark);
             margin-bottom: 15px;
             font-size: 16px;
             text-transform: uppercase;
@@ -101,7 +101,7 @@
             display: block;
             font-size: 13px;
             font-weight: 700;
-            color: #065f46;
+            color: var(--brand-blue-dark);
             margin-bottom: 6px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -121,7 +121,7 @@
 
         input[type="password"]:focus {
             outline: none;
-            border-color: #10b981;
+            border-color: var(--brand-blue);
             background-color: #ffffff;
             box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
         }
@@ -132,7 +132,7 @@
             margin-top: 10px;
             padding: 15px;
             border-radius: 12px;
-            background: linear-gradient(135deg, #059669, #047857);
+            background: linear-gradient(135deg, var(--brand-blue), var(--brand-blue-dark));
             color: white;
             font-weight: 700;
             font-size: 15px;

@@ -7,7 +7,7 @@
         @if($course->is_active)<a href="{{ route('teacher.sessions.create', $course) }}" class="teacher-btn teacher-btn-primary">＋ Nueva sesión</a>@endif
     </div>
     <div class="teacher-card">
-        <div class="teacher-header" style="margin-bottom:14px;"><h2 style="color:#065f46; font-size:19px; margin:0;">Historial de sesiones</h2><a href="{{ route('teacher.courses.edit', $course) }}" style="color:#047857; font-weight:700;">Editar curso</a></div>
+        <div class="teacher-header" style="margin-bottom:14px;"><h2 style="color:var(--brand-blue-dark); font-size:19px; margin:0;">Historial de sesiones</h2><a href="{{ route('teacher.courses.edit', $course) }}" style="color:var(--brand-blue-dark); font-weight:700;">Editar curso</a></div>
         <div class="teacher-list">
             @forelse($course->rooms as $room)
                 <div class="teacher-row">

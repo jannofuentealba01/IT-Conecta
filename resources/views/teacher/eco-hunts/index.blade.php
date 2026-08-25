@@ -1,0 +1,39 @@
+@extends('layouts.app')
+@section('content')
+@include('teacher.partials.styles')
+<style>
+    .eco-summary{background:linear-gradient(135deg,var(--brand-green-dark),var(--brand-blue));color:var(--surface);border-radius:18px;padding:21px;margin-bottom:18px}.eco-summary h2{margin:0 0 6px}.eco-summary p{margin:0;opacity:.9}.eco-type{margin:20px 0 10px;color:var(--brand-green-dark);font-size:18px}.eco-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}.eco-option{display:block;border:1px solid var(--border);border-radius:14px;padding:15px;background:var(--surface);cursor:pointer}.eco-option:has(input:checked){border:2px solid var(--brand-green);background:var(--positive-soft)}.eco-top{display:flex;gap:10px;align-items:start}.eco-icon{font-size:24px}.eco-name{font-weight:850;color:var(--text-primary)}.eco-meta{font-size:12px;color:var(--text-secondary);margin-top:5px;line-height:1.45}.eco-points{display:inline-block;margin-top:8px;padding:4px 8px;border-radius:99px;background:var(--warning-soft);color:var(--text-primary);font-size:12px;font-weight:850}.eco-actions{position:sticky;bottom:10px;background:color-mix(in srgb,var(--surface) 96%,transparent);border:1px solid var(--border);border-radius:14px;padding:13px;margin-top:18px;display:flex;justify-content:space-between;align-items:center;gap:12px;box-shadow:0 8px 25px rgba(17,24,39,.12)}.teacher-shell .eco-actions .teacher-btn-primary,.teacher-shell>form+.teacher-btn-primary{background:var(--brand-green)}@media(max-width:640px){.eco-actions{flex-direction:column}.eco-actions .teacher-btn{width:100%}}
+</style>
+<div class="teacher-shell">
+    <div class="teacher-header"><div><p class="teacher-eyebrow">Sala {{ $room->code }}</p><h1 class="teacher-title">EcoBúsqueda</h1><p class="teacher-subtitle">Prepara, inicia y controla la búsqueda individual de QR.</p></div><a class="teacher-btn teacher-btn-muted" href="{{ route('teacher.sessions.show',$room) }}">← Volver a la sala</a></div>
+    @if(session('success'))<div class="teacher-card" style="margin-bottom:14px;color:var(--brand-green-dark);background:var(--positive-soft)">{{ session('success') }}</div>@endif
+    @if(session('error'))<div class="teacher-card" style="margin-bottom:14px;color:var(--danger-dark);background:var(--danger-soft)">{{ session('error') }}</div>@endif
+    <div class="eco-summary"><h2>{{ $hunt?->name ?? 'Nueva EcoBúsqueda' }}</h2><p>Modalidad individual · 15 minutos fijos · QR permanentes · ranking solo al finalizar</p></div>
+    @if($hunt)<div style="margin:-7px 0 18px;text-align:right"><a class="teacher-btn teacher-btn-secondary" href="{{ route('teacher.eco-hunts.kit',[$room,$hunt]) }}">⬇ Descargar kit PDF</a></div>@endif
+    @if($hunt?->status === 'ready')
+        <div class="teacher-card" style="margin-bottom:18px;text-align:center;border-color:var(--brand-green)"><p class="teacher-eyebrow">Preparada y esperando inicio</p><h2 style="color:var(--brand-green-dark);margin:0 0 7px">Los estudiantes todavía no pueden sumar puntos</h2><p class="teacher-meta">Puedes revisar la selección y descargar el kit. El tiempo comenzará únicamente cuando pulses “Iniciar EcoBúsqueda”.</p></div>
+    @elseif($hunt?->status === 'active')
+        <div class="teacher-card" style="margin-bottom:18px;text-align:center"><p class="teacher-eyebrow">Actividad en curso</p><div id="ecoTimer" data-ends="{{ $hunt->ends_at->toIso8601String() }}" style="font-size:42px;font-weight:900;color:var(--brand-green-dark)">--:--</div><p class="teacher-meta">Los estudiantes ya pueden buscar y escanear los QR.</p><form method="POST" action="{{ route('teacher.eco-hunts.finish',[$room,$hunt]) }}" onsubmit="return confirm('¿Finalizar la EcoBúsqueda ahora? Ya no se aceptarán más puntos.');">@csrf<button class="teacher-btn teacher-btn-danger">Finalizar actividad</button></form></div>
+    @elseif($hunt?->status === 'finished')
+        <div class="teacher-card" style="margin-bottom:18px;text-align:center"><h2 style="color:var(--brand-green-dark)">EcoBúsqueda finalizada</h2><p class="teacher-meta">Ya no se aceptan puntos.</p><div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap"><a class="teacher-btn teacher-btn-secondary" href="{{ route('teacher.eco-hunts.results',[$room,$hunt]) }}">Ver resultados</a>@if((int)$hunt->reopen_count === 0 && $room->isOpen())<form method="POST" action="{{ route('teacher.eco-hunts.reopen',[$room,$hunt]) }}" onsubmit="return confirm('¿Reabrir por 5 minutos? Esta opción se puede usar una sola vez.');">@csrf<button class="teacher-btn teacher-btn-primary">↻ Reabrir por 5 minutos</button></form>@elseif((int)$hunt->reopen_count >= 1)<span class="teacher-badge status-draft">Reapertura utilizada</span>@endif</div></div>
+    @endif
+    @php($selected = collect(old('activities', $hunt?->activities->pluck('id')->all() ?? $profiles->pluck('activity_id')->all()))->map(fn($id)=>(int)$id))
+    @php($configurationEditable = !$hunt || $hunt->status === 'ready')
+    <form method="POST" action="{{ $hunt ? route('teacher.eco-hunts.update',[$room,$hunt]) : route('teacher.eco-hunts.store',$room) }}">
+        @csrf @if($hunt) @method('PUT') @endif
+        <div class="teacher-card"><div class="teacher-form-group"><label for="name">Nombre de la actividad</label><input class="teacher-input" id="name" name="name" maxlength="100" value="{{ old('name',$hunt?->name ?? 'EcoBúsqueda') }}" required @disabled(!$configurationEditable)></div>
+        @error('activities')<div class="teacher-error">{{ $message }}</div>@enderror
+        @foreach(['immediate'=>'⚡ Acción inmediata y comprobable','declared'=>'🕐 Acción previa declarada'] as $type => $label)
+            <h2 class="eco-type">{{ $label }}</h2><div class="eco-list">
+            @foreach($profiles->where('activity_type',$type) as $profile)
+                <label class="eco-option"><div class="eco-top"><input type="checkbox" name="activities[]" value="{{ $profile->activity_id }}" @checked($selected->contains($profile->activity_id)) @disabled(!$configurationEditable)><span class="eco-icon">{{ $profile->icon }}</span><div><div class="eco-name">{{ $profile->activity->name }}</div><div class="eco-meta">{{ $profile->activity->instructions }}</div><div class="eco-meta"><strong>Ubicación sugerida:</strong> {{ $profile->location_suggestion }} · Confianza {{ $profile->impact_confidence }}</div><span class="eco-points">{{ $profile->game_points }} puntos</span></div></div></label>
+            @endforeach
+            </div>
+        @endforeach
+        </div>
+        <div class="eco-actions"><span><strong id="selectedCount">{{ $selected->count() }}</strong>/20 actividades seleccionadas</span><div style="display:flex;gap:9px;flex-wrap:wrap">@if($hunt?->status === 'ready')<button class="teacher-btn teacher-btn-primary">Guardar selección</button>@elseif(!$hunt)<button class="teacher-btn teacher-btn-primary">Preparar EcoBúsqueda</button>@endif</div></div>
+    </form>
+    @if($hunt?->status === 'ready')<form method="POST" action="{{ route('teacher.eco-hunts.start',[$room,$hunt]) }}" onsubmit="return confirm('¿Iniciar ahora? El reloj de 15 minutos comenzará inmediatamente.');" style="margin-top:14px;text-align:center">@csrf<button class="teacher-btn teacher-btn-primary" style="min-width:240px">▶ Iniciar EcoBúsqueda</button></form>@endif
+</div>
+<script>const boxes=[...document.querySelectorAll('input[name="activities[]"]')],count=document.getElementById('selectedCount');function refresh(){count.textContent=boxes.filter(x=>x.checked).length}boxes.forEach(x=>x.addEventListener('change',refresh));refresh();const timer=document.getElementById('ecoTimer');if(timer){const end=new Date(timer.dataset.ends).getTime();const tick=()=>{const left=Math.max(0,Math.ceil((end-Date.now())/1000));timer.textContent=String(Math.floor(left/60)).padStart(2,'0')+':'+String(left%60).padStart(2,'0');if(left===0)location.reload()};tick();setInterval(tick,1000)}</script>
+@endsection

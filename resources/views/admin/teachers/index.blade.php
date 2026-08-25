@@ -16,10 +16,10 @@
     </div>
 
     @if(session('success'))
-        <div style="padding:14px;border-radius:12px;background:#dcfce7;color:#166534;margin-bottom:16px;font-weight:750;">{{ session('success') }}</div>
+        <div style="padding:14px;border-radius:12px;background:var(--positive-soft);color:var(--brand-green-dark);margin-bottom:16px;font-weight:750;">{{ session('success') }}</div>
     @endif
     @if(session('error'))
-        <div style="padding:14px;border-radius:12px;background:#fee2e2;color:#991b1b;margin-bottom:16px;font-weight:750;">{{ session('error') }}</div>
+        <div style="padding:14px;border-radius:12px;background:var(--danger-soft);color:var(--danger-dark);margin-bottom:16px;font-weight:750;">{{ session('error') }}</div>
     @endif
 
     <div class="teacher-grid" style="margin-bottom:20px;">
@@ -28,7 +28,7 @@
     </div>
 
     <section class="teacher-card" style="margin-bottom:20px;">
-        <h2 style="color:#065f46;font-size:20px;margin:0 0 14px;">Solicitudes pendientes</h2>
+        <h2 style="color:var(--brand-blue-dark);font-size:20px;margin:0 0 14px;">Solicitudes pendientes</h2>
         <div class="teacher-list">
             @forelse($pendingTeachers as $teacher)
                 <div class="teacher-row">
@@ -48,7 +48,7 @@
     </section>
 
     <section class="teacher-card">
-        <h2 style="color:#065f46;font-size:20px;margin:0 0 14px;">Profesores aprobados</h2>
+        <h2 style="color:var(--brand-blue-dark);font-size:20px;margin:0 0 14px;">Profesores aprobados</h2>
         <div class="teacher-list">
             @forelse($approvedTeachers as $teacher)
                 <div class="teacher-row">

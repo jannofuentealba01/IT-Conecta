@@ -11,6 +11,13 @@ export default {
 
     theme: {
         extend: {
+            colors: {
+                brand: { blue: 'var(--brand-blue)', 'blue-dark': 'var(--brand-blue-dark)', 'blue-light': 'var(--brand-blue-light)' },
+                sustainability: { DEFAULT: 'var(--brand-green)', dark: 'var(--brand-green-dark)' },
+                game: { DEFAULT: 'var(--brand-purple)', dark: 'var(--brand-purple-dark)' },
+                impact: { low: 'var(--impact-low)', medium: 'var(--impact-medium)', high: 'var(--impact-high)' },
+                ui: { text: 'var(--text-primary)', muted: 'var(--text-secondary)', surface: 'var(--surface)', background: 'var(--surface-muted)', border: 'var(--border)' },
+            },
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },

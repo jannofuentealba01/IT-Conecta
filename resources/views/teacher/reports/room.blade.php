@@ -5,48 +5,48 @@
 <style>
     .report-actions { display:flex; gap:10px; flex-wrap:wrap; }
     .report-summary { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:18px; }
-    .report-stat { background:#fff; border:1px solid #d1fae5; border-radius:15px; padding:17px; }
-    .report-stat span { display:block; color:#64748b; font-size:12px; font-weight:750; }
-    .report-stat strong { display:block; margin-top:7px; color:#047857; font-size:24px; overflow-wrap:anywhere; }
+    .report-stat { background:var(--surface); border:1px solid var(--border); border-radius:15px; padding:17px; }
+    .report-stat span { display:block; color:var(--text-secondary); font-size:12px; font-weight:750; }
+    .report-stat strong { display:block; margin-top:7px; color:var(--brand-blue-dark); font-size:24px; overflow-wrap:anywhere; }
     .report-table-wrap { width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; }
     .report-table { width:100%; border-collapse:collapse; min-width:800px; }
-    .report-table th { padding:12px; color:#065f46; background:#f0fdf4; font-size:12px; text-align:left; text-transform:uppercase; }
-    .report-table td { padding:14px 12px; border-bottom:1px solid #e5e7eb; vertical-align:top; }
+    .report-table th { padding:12px; color:var(--brand-blue-dark); background:var(--info-soft); font-size:12px; text-align:left; text-transform:uppercase; }
+    .report-table td { padding:14px 12px; border-bottom:1px solid var(--border); vertical-align:top; }
     .report-table tr:last-child td { border-bottom:0; }
-    .student-title { color:#064e3b; font-weight:850; }
-    .student-meta { color:#64748b; font-size:12px; margin-top:4px; }
-    .score { color:#d97706; font-weight:900; font-size:18px; }
+    .student-title { color:var(--text-primary); font-weight:850; }
+    .student-meta { color:var(--text-secondary); font-size:12px; margin-top:4px; }
+    .score { color:var(--warning-orange); font-weight:900; font-size:18px; }
     .level { display:inline-flex; border-radius:99px; padding:4px 8px; font-size:11px; font-weight:850; }
-    .level-low { color:#166534; background:#dcfce7; }
-    .level-medium { color:#92400e; background:#fef3c7; }
-    .level-high { color:#991b1b; background:#fee2e2; }
-    .footprint-number-low { color:#166534; }
-    .footprint-number-medium { color:#92400e; }
-    .footprint-number-high { color:#991b1b; }
-    .report-stat.footprint-low { background:#dcfce7; border-color:#86efac; }
-    .report-stat.footprint-medium { background:#fef3c7; border-color:#fcd34d; }
-    .report-stat.footprint-high { background:#fee2e2; border-color:#fca5a5; }
-    .report-stat.footprint-low strong { color:#166534; }
-    .report-stat.footprint-medium strong { color:#92400e; }
-    .report-stat.footprint-high strong { color:#991b1b; }
-    .activity-list { margin:6px 0 0; padding-left:17px; color:#475569; font-size:12px; }
-    .report-note { padding:14px 16px; margin-bottom:18px; border-radius:13px; color:#475569; background:#f8fafc; border:1px solid #e2e8f0; font-size:13px; line-height:1.5; }
+    .level-low { color:var(--brand-green-dark); background:var(--positive-soft); }
+    .level-medium { color:var(--text-primary); background:var(--impact-medium); }
+    .level-high { color:var(--danger-dark); background:var(--danger-soft); }
+    .footprint-number-low { color:var(--brand-green-dark); }
+    .footprint-number-medium { color:var(--text-primary); }
+    .footprint-number-high { color:var(--danger-dark); }
+    .report-stat.footprint-low { background:var(--positive-soft); border-color:var(--impact-low); }
+    .report-stat.footprint-medium { background:var(--impact-medium); border-color:var(--impact-medium); }
+    .report-stat.footprint-high { background:var(--danger-soft); border-color:var(--impact-high); }
+    .report-stat.footprint-low strong { color:var(--brand-green-dark); }
+    .report-stat.footprint-medium strong { color:var(--text-primary); }
+    .report-stat.footprint-high strong { color:var(--danger-dark); }
+    .activity-list { margin:6px 0 0; padding-left:17px; color:var(--text-secondary); font-size:12px; }
+    .report-note { padding:14px 16px; margin-bottom:18px; border-radius:13px; color:var(--text-secondary); background:var(--surface-muted); border:1px solid var(--border); font-size:13px; line-height:1.5; }
     .mobile-results { display:none; }
     @media (max-width:760px) {
         .report-summary { grid-template-columns:repeat(2,minmax(0,1fr)); }
         .report-table-wrap { display:none; }
         .mobile-results { display:grid; gap:12px; }
-        .student-card { padding:16px; border:1px solid #d1fae5; border-radius:15px; background:#fff; }
+        .student-card { padding:16px; border:1px solid var(--border); border-radius:15px; background:var(--surface); }
         .student-card-head { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
         .student-metrics { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-top:13px; }
-        .student-metric { padding:10px; border-radius:10px; background:#f8fafc; color:#64748b; font-size:11px; }
-        .student-metric strong { display:block; margin-top:4px; color:#065f46; font-size:15px; }
-        .student-metric.footprint-low { background:#dcfce7; }
-        .student-metric.footprint-medium { background:#fef3c7; }
-        .student-metric.footprint-high { background:#fee2e2; }
-        .student-metric strong.footprint-number-low { color:#166534; }
-        .student-metric strong.footprint-number-medium { color:#92400e; }
-        .student-metric strong.footprint-number-high { color:#991b1b; }
+        .student-metric { padding:10px; border-radius:10px; background:var(--surface-muted); color:var(--text-secondary); font-size:11px; }
+        .student-metric strong { display:block; margin-top:4px; color:var(--text-primary); font-size:15px; }
+        .student-metric.footprint-low { background:var(--positive-soft); }
+        .student-metric.footprint-medium { background:var(--impact-medium); }
+        .student-metric.footprint-high { background:var(--danger-soft); }
+        .student-metric strong.footprint-number-low { color:var(--brand-green-dark); }
+        .student-metric strong.footprint-number-medium { color:var(--text-primary); }
+        .student-metric strong.footprint-number-high { color:var(--danger-dark); }
     }
     @media (max-width:420px) { .report-summary { grid-template-columns:1fr; } }
     @media print {
@@ -148,6 +148,14 @@
             @endforelse
         </div>
     </section>
+
+    @foreach($ecoHunts as $hunt)
+    <section class="teacher-card" style="margin-top:18px">
+        <div class="teacher-header" style="margin-bottom:12px"><div><h2 style="margin:0 0 5px;font-size:19px">EcoBúsqueda: {{ $hunt->name }}</h2><p class="teacher-meta">{{ $hunt->started_at?->format('d/m/Y H:i') ?? 'No iniciada' }} · {{ $hunt->effective_seconds !== null ? gmdate('i:s',(int)$hunt->effective_seconds) : '--:--' }} de duración · {{ ['automatic'=>'Finalización automática','teacher'=>'Finalización docente'][$hunt->finished_by] ?? ['draft'=>'En configuración','ready'=>'Preparada','active'=>'Activa','finished'=>'Finalizada'][$hunt->status] ?? ucfirst($hunt->status) }}</p></div><span class="teacher-badge status-{{ $hunt->status==='active'?'open':'draft' }}">{{ $hunt->completions->count() }} QR registrados</span></div>
+        @if($hunt->ranking->isNotEmpty())<div class="report-table-wrap"><table class="report-table" style="min-width:560px"><thead><tr><th>Posición</th><th>Estudiante</th><th>Puntos</th><th>QR encontrados</th></tr></thead><tbody>@foreach($hunt->ranking as $index=>$entry)<tr><td>#{{ $index+1 }}</td><td>{{ $entry->name }}</td><td class="score">{{ $entry->points }}</td><td>{{ $entry->completed_count }}/{{ $hunt->activities->count() }}</td></tr>@endforeach</tbody></table></div>@else<div class="empty-state">Esta EcoBúsqueda todavía no registra actividades completadas.</div>@endif
+        @if($hunt->activity_stats->isNotEmpty())<div class="report-note" style="margin:14px 0 0"><strong>Actividad más encontrada:</strong> {{ $hunt->activity_stats->first()->name }} ({{ $hunt->activity_stats->first()->count }}) · <strong>Menos encontrada entre las registradas:</strong> {{ $hunt->activity_stats->last()->name }} ({{ $hunt->activity_stats->last()->count }})</div>@endif
+    </section>
+    @endforeach
 
     <div style="margin-top:16px;"><a href="{{ route('teacher.sessions.show', $room) }}" class="teacher-btn teacher-btn-muted">← Volver a la sala</a></div>
 </div>

@@ -13,12 +13,14 @@
 /.zed
 /auth.json
 /node_modules
+/.pnpm-store
 /public/build
 /public/hot
 /public/storage
 /storage/*.key
 /storage/pail
 /vendor
+/output/pdf/*.pdf
 Homestead.json
 Homestead.yaml
 Thumbs.db

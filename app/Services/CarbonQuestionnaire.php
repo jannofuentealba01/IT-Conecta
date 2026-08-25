@@ -36,7 +36,7 @@ class CarbonQuestionnaire
     public function questions(): array
     {
         return [
-            'p1' => ['label' => '¿Cuál es el medio de transporte principal al liceo?', 'options' => [
+            'p1' => ['label' => '¿Cuál es el medio de transporte que principalmente utilizas para llegar al liceo?', 'options' => [
                 'walking' => ['label' => 'Caminando', 'factor' => 0.0],
                 'bicycle' => ['label' => 'Bicicleta', 'factor' => 0.0],
                 'public_transport' => ['label' => 'Transporte público', 'factor' => 72.5],
@@ -47,7 +47,7 @@ class CarbonQuestionnaire
                 '10_to_30' => ['label' => '10-30 minutos', 'factor' => 1.0],
                 'over_30' => ['label' => 'Más de 30 minutos', 'factor' => 2.0],
             ]],
-            'p3' => ['label' => '¿Cuántas horas usas computador, celular o consola diariamente?', 'options' => [
+            'p3' => ['label' => '¿Cuántas horas diarias utilizas dispositivos electrónicos, ya sea teléfono, computador, tablet o televisión?', 'options' => [
                 'under_1_hour' => ['label' => 'Menos de 1 hora', 'factor' => 13.5],
                 '1_to_3_hours' => ['label' => '1-3 horas', 'factor' => 40.5],
                 'over_3_hours' => ['label' => 'Más de 3 horas', 'factor' => 94.6],
@@ -62,7 +62,7 @@ class CarbonQuestionnaire
                 '5_to_10' => ['label' => '5-10 minutos', 'factor' => 5.2],
                 'over_10' => ['label' => 'Más de 10 minutos', 'factor' => 10.5],
             ]],
-            'p6' => ['label' => '¿Cuántos días a la semana consumes carne?', 'options' => [
+            'p6' => ['label' => '¿Cuántos días a la semana consumes carne, ya sea de vacuno, cerdo o pollo?', 'options' => [
                 '0_to_1_days' => ['label' => '0-1 días', 'factor' => 110.0],
                 '2_to_4_days' => ['label' => '2-4 días', 'factor' => 420.0],
                 'every_day' => ['label' => 'Todos los días', 'factor' => 890.0],
@@ -82,7 +82,7 @@ class CarbonQuestionnaire
                 'several_year' => ['label' => 'Varias veces al año', 'factor' => 115.0],
                 'very_often' => ['label' => 'Muy frecuentemente', 'factor' => 340.0],
             ]],
-            'p10' => ['label' => '¿Con qué frecuencia usas papel en tus actividades diarias?', 'options' => [
+            'p10' => ['label' => '¿Con qué frecuencia utilizas papel en tu quehacer laboral o estudiantil?', 'options' => [
                 'rarely' => ['label' => 'Casi nunca', 'factor' => 2.1],
                 'sometimes' => ['label' => 'A veces', 'factor' => 18.5],
                 'often' => ['label' => 'Frecuentemente', 'factor' => 45.5],

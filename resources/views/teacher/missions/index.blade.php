@@ -9,8 +9,8 @@
             @forelse($activities as $activity)
                 @php($mission = $assigned->get($activity->id))
                 <label class="teacher-row" style="cursor:pointer; align-items:flex-start;">
-                    <input type="checkbox" name="activities[]" value="{{ $activity->id }}" @checked($mission) style="width:20px; height:20px; accent-color:#059669; margin-top:3px;">
-                    <div style="flex:1;"><h3>{{ $activity->name }}</h3><p class="teacher-meta">{{ $activity->instructions }}</p><div style="margin-top:7px;"><span class="teacher-badge status-open">{{ $activity->category }}</span> <strong style="color:#d97706; font-size:13px;">⭐ {{ $activity->points }} puntos</strong></div></div>
+                    <input type="checkbox" name="activities[]" value="{{ $activity->id }}" @checked($mission) style="width:20px; height:20px; accent-color:var(--brand-green); margin-top:3px;">
+                    <div style="flex:1;"><h3>{{ $activity->name }}</h3><p class="teacher-meta">{{ $activity->instructions }}</p><div style="margin-top:7px;"><span class="teacher-badge status-open">{{ $activity->category }}</span> <strong style="color:var(--warning-orange); font-size:13px;">⭐ {{ $activity->points }} puntos</strong></div></div>
                     @if($mission)<a href="{{ route('teacher.missions.qr', [$room, $mission]) }}" class="teacher-btn teacher-btn-secondary" onclick="event.stopPropagation();">Ver QR</a>@endif
                 </label>
             @empty

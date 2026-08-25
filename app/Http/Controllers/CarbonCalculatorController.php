@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CarbonFootprint;
 use App\Models\Participant;
 use App\Services\CarbonCalculator;
+use App\Services\CarbonImpactEquivalency;
 use App\Services\CarbonQuestionnaire;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -81,5 +82,23 @@ class CarbonCalculatorController extends Controller
         return redirect()->route('carbon.form')
             ->with('success', 'Tu huella inicial quedó guardada correctamente.')
             ->with('calculation_saved', $footprint->id);
+    }
+
+    public function impact(Request $request, CarbonImpactEquivalency $equivalency)
+    {
+        $participant = Participant::findOrFail($request->session()->get('participant_id'));
+        $footprint = $participant->carbonFootprints()->where('is_current', true)->latest()->first();
+
+        if (! $footprint) {
+            return redirect()->route('carbon.form', ['new' => 1]);
+        }
+
+        $impact = $equivalency->for(
+            (float) $footprint->initial_kg_co2e_year,
+            $participant->id,
+            $footprint->id
+        );
+
+        return view('carbon.impact', compact('footprint', 'impact'));
     }
 }

@@ -8,7 +8,7 @@
         <h1 class="teacher-title">{{ $mission->activity->name }}</h1>
         <p class="teacher-subtitle">Escanea para descubrir la instrucción</p>
         <div style="margin:28px auto; padding:18px; max-width:100%; background:#fff; display:inline-block; border:2px solid #d1fae5; border-radius:16px;">{!! QrCode::size(300)->generate($missionUrl) !!}</div>
-        <p style="color:#047857; font-weight:800;">⭐ {{ $mission->activity->points }} puntos · {{ $mission->activity->category }}</p>
+        <p style="color:var(--brand-green-dark); font-weight:800;">⭐ {{ $mission->activity->points }} puntos · {{ $mission->activity->category }}</p>
         <p style="font-size:12px; color:#64748b; overflow-wrap:anywhere;">{{ $missionUrl }}</p>
         @if(in_array(request()->getHost(), ['127.0.0.1', 'localhost', '::1'], true))
             <div style="margin-top:15px; padding:13px; border-radius:11px; background:#fffbeb; color:#92400e; text-align:left; font-size:13px; line-height:1.5;"><strong>Atención para teléfonos:</strong> esta dirección solo funciona en este computador. Abre el panel docente usando la IP local del computador antes de imprimir el QR.</div>

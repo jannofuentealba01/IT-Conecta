@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'Panel de Control | IT Conecta' }}</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @include('partials.color-tokens')
 
     <style>
         /* ESTILOS GLOBALES Y VARIABLES */
@@ -17,8 +19,8 @@
 
         body {
             min-height: 100vh;
-            background: linear-gradient(135deg, #ecfdf5, #d1fae5, #a7f3d0);
-            color: #064e3b;
+            background: var(--surface-muted);
+            color: var(--text-primary);
             padding: 20px;
         }
 
@@ -32,13 +34,13 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(255, 255, 255, 0.9);
+            background: color-mix(in srgb, var(--surface) 94%, transparent);
             backdrop-filter: blur(10px);
             padding: 15px 25px;
             border-radius: 16px;
             box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
             margin-bottom: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            border: 1px solid var(--border);
         }
 
         .brand-group {
@@ -46,7 +48,7 @@
             align-items: center;
             gap: 12px;
             text-decoration: none;
-            color: #064e3b;
+            color: var(--text-primary);
             transition: transform 0.2s ease;
         }
 
@@ -71,9 +73,13 @@
             gap: 15px;
         }
 
+        .user-badge .student-identity-bar {
+            margin: 0;
+        }
+
         .user-info {
-            background: #d1fae5;
-            color: #065f46;
+            background: var(--info-soft);
+            color: var(--brand-blue-dark);
             padding: 8px 16px;
             border-radius: 99px;
             font-size: 14px;
@@ -81,13 +87,13 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            border: 1px solid #a7f3d0;
+            border: 1px solid var(--brand-blue-light);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
 
         .user-info .points-highlight {
-            color: #047857;
-            background: white;
+            color: var(--brand-blue-dark);
+            background: var(--surface);
             padding: 2px 10px;
             border-radius: 99px;
             font-size: 13px;
@@ -96,8 +102,8 @@
         /* Botón de Logout */
         .logout-btn {
             text-decoration: none;
-            background: #065f46;
-            color: white;
+            background: var(--brand-blue);
+            color: var(--surface);
             padding: 10px 18px;
             border-radius: 10px;
             font-size: 14px;
@@ -109,9 +115,9 @@
         }
 
         .logout-btn:hover {
-            background: #047857;
+            background: var(--brand-blue-dark);
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(6, 95, 70, 0.2);
+            box-shadow: 0 4px 12px var(--focus-ring);
         }
 
         /* ALERTAS DE ÉXITO O ERROR DEL SISTEMA */
@@ -128,15 +134,15 @@
         }
 
         .alert-success {
-            background-color: #ecfdf5;
-            border: 1px solid #10b981;
-            color: #065f46;
+            background-color: var(--positive-soft);
+            border: 1px solid var(--brand-green);
+            color: var(--brand-green-dark);
         }
 
         .alert-danger {
-            background-color: #fef2f2;
-            border: 1px solid #ef4444;
-            color: #991b1b;
+            background-color: var(--danger-soft);
+            border: 1px solid var(--danger);
+            color: var(--danger-dark);
         }
 
         @keyframes slideIn {
@@ -160,7 +166,7 @@
             text-align: center;
             font-size: 13px;
             opacity: 0.7;
-            color: #065f46;
+            color: var(--text-secondary);
             font-weight: 500;
         }
 
@@ -203,16 +209,7 @@
         <!-- Datos de sesión del participante -->
         @if (session()->has('participant_id'))
         <div class="user-badge">
-            <div class="user-info">
-                <span>👤 {{ session('participant_name') }} ({{ session('participant_course') }})</span>
-                <span class="points-highlight">📍 Sala: {{ session('room_code') }}</span>
-            </div>
-
-            <!-- Botón para Salir de la Sala -->
-            <form method="POST" action="{{ route('room.exit') }}">
-                @csrf
-                <button type="submit" class="logout-btn" style="border:0; cursor:pointer;">Salir de la sala</button>
-            </form>
+            @include('student.partials.identity-bar')
         </div>
         @elseif (auth()->check())
         <div class="user-badge">

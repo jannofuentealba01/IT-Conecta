@@ -13,8 +13,9 @@
 
         <!-- Scripts/Styles (Vite o Asset compilados) -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @include('partials.color-tokens')
     </head>
-    <body class="font-sans antialiased text-gray-900">
+    <body class="font-sans antialiased text-ui-text">
         <!-- Eliminamos los contenedores rígidos de Breeze y dejamos que el slot controle el render -->
         {{ $slot }}
     </body>

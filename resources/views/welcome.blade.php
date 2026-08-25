@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IT Conecta - EcoImpact</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @include('partials.color-tokens')
 
     <style>
         * {
@@ -15,7 +17,7 @@
 
         body {
             min-height: 100vh;
-            background: linear-gradient(135deg, #0f766e, #065f46, #022c22);
+            background: linear-gradient(135deg,var(--brand-blue),var(--brand-blue-dark),var(--text-primary));
             display: flex;
             justify-content: center;
             align-items: center;
@@ -66,14 +68,14 @@
         }
 
         .card h2 {
-            color: #0f766e;
+            color: var(--brand-blue-dark);
             font-size: 22px;
             font-weight: 800;
             margin-bottom: 6px;
         }
 
         .card .subtitle {
-            color: #4b5563;
+            color: var(--text-secondary);
             font-size: 14px;
             margin-bottom: 20px;
             line-height: 1.4;
@@ -87,26 +89,26 @@
             font-weight: 800;
             text-align: center;
             letter-spacing: 4px;
-            border: 2px solid #a7f3d0;
+            border: 2px solid var(--brand-blue-light);
             border-radius: 12px;
             outline: none;
             text-transform: uppercase;
-            color: #065f46;
-            background: #f0fdf4;
+            color: var(--text-primary);
+            background: var(--surface-muted);
             transition: all 0.2s ease;
             margin-bottom: 16px;
         }
 
         .code-input:focus {
-            border-color: #059669;
-            background: #ffffff;
-            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+            border-color: var(--brand-blue);
+            background: var(--surface);
+            box-shadow: 0 0 0 4px var(--focus-ring);
         }
 
         /* Botón Principal de Sala */
         .btn-submit {
             width: 100%;
-            background: linear-gradient(135deg, #059669, #047857);
+            background: var(--brand-blue);
             color: white;
             border: none;
             padding: 15px;
@@ -130,9 +132,9 @@
 
         /* Mensajes de Alerta */
         .alert-error {
-            background: #fee2e2;
-            border: 1px solid #f87171;
-            color: #991b1b;
+            background: var(--danger-soft);
+            border: 1px solid var(--danger);
+            color: var(--danger-dark);
             padding: 12px;
             border-radius: 10px;
             margin-bottom: 16px;
@@ -142,9 +144,9 @@
         }
 
         .alert-success {
-            background: #dcfce7;
-            border: 1px solid #4ade80;
-            color: #166534;
+            background: var(--positive-soft);
+            border: 1px solid var(--brand-green);
+            color: var(--brand-green-dark);
             padding: 12px;
             border-radius: 10px;
             margin-bottom: 16px;
@@ -200,7 +202,7 @@
             display: block;
             width: 100%;
             padding: 14px;
-            background: #1f2937;
+            background: var(--brand-blue);
             color: white;
             text-decoration: none;
             border-radius: 10px;
@@ -210,7 +212,7 @@
         }
 
         .btn-dashboard:hover {
-            background: #111827;
+            background: var(--brand-blue-dark);
             transform: translateY(-2px);
         }
 
@@ -232,7 +234,7 @@
             font-weight: 600;
             font-size: 13px;
             margin-bottom: 4px;
-            color: #34d399;
+            color: var(--brand-blue-light);
         }
 
         .footer .system-status {
@@ -248,9 +250,9 @@
         .status-dot {
             width: 8px;
             height: 8px;
-            background-color: #10b981;
+            background-color: var(--brand-green);
             border-radius: 50%;
-            box-shadow: 0 0 8px #10b981;
+            box-shadow: 0 0 8px var(--brand-green);
         }
     </style>
 </head>

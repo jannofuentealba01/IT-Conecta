@@ -22,7 +22,7 @@
         }
 
         .section-title {
-            color: #0f766e;
+            color: var(--brand-green-dark);
             font-size: 24px;
             font-weight: 800;
             display: flex;
@@ -35,7 +35,7 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: linear-gradient(135deg, #059669, #047857);
+            background: linear-gradient(135deg, var(--brand-green), var(--brand-green-dark));
             color: white;
             text-decoration: none;
             padding: 12px 20px;
@@ -57,7 +57,7 @@
             width: 100%;
             overflow-x: auto;
             border-radius: 12px;
-            border: 1px solid #e5e7eb;
+            border: 1px solid var(--border);
             background-color: white;
         }
 
@@ -70,20 +70,20 @@
         }
 
         th {
-            background-color: #f0fdf4;
-            color: #065f46;
+            background-color: var(--brand-green-soft);
+            color: var(--brand-green-dark);
             font-weight: 700;
             padding: 16px 20px;
             text-transform: uppercase;
             font-size: 12px;
             letter-spacing: 0.5px;
-            border-bottom: 2px solid #bbf7d0;
+            border-bottom: 2px solid var(--brand-green-soft-border);
         }
 
         td {
             padding: 16px 20px;
-            color: #1f2937;
-            border-bottom: 1px solid #e5e7eb;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border);
             vertical-align: middle;
         }
 
@@ -92,19 +92,19 @@
         }
 
         tr:hover td {
-            background-color: #f9fafb;
+            background-color: var(--surface-muted);
         }
 
         .activity-name {
             font-weight: 600;
-            color: #111827;
+            color: var(--text-primary);
             font-size: 15px;
         }
 
         /* BADGE DE PUNTAJE */
         .badge-points {
-            background-color: #fef3c7;
-            color: #d97706;
+            background-color: var(--warning-orange-soft);
+            color: var(--warning-orange);
             padding: 4px 10px;
             border-radius: 99px;
             font-weight: 700;
@@ -112,7 +112,7 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            border: 1px solid #fde68a;
+            border: 1px solid var(--warning-orange);
         }
 
         /* GRUPO DE BOTONES DE ACCIONES */
@@ -140,43 +140,43 @@
 
         /* Realizar (Acción Principal de Estudiante) */
         .btn-realizar {
-            background-color: #d1fae5;
-            color: #065f46;
-            border: 1px solid #a7f3d0;
+            background-color: var(--brand-green-soft);
+            color: var(--text-primary);
+            border: 1px solid var(--brand-green-soft-border);
         }
 
         .btn-realizar:hover {
-            background-color: #059669;
+            background-color: var(--brand-green);
             color: white;
-            border-color: #059669;
+            border-color: var(--brand-green);
             transform: translateY(-1px);
         }
 
         /* Editar */
         .btn-edit {
-            background-color: #e0f2fe;
-            color: #0369a1;
-            border: 1px solid #bae6fd;
+            background-color: var(--brand-blue-soft);
+            color: var(--brand-blue-dark);
+            border: 1px solid var(--brand-blue-soft-border);
         }
 
         .btn-edit:hover {
-            background-color: #0284c7;
+            background-color: var(--brand-blue);
             color: white;
-            border-color: #0284c7;
+            border-color: var(--brand-blue);
             transform: translateY(-1px);
         }
 
         /* Eliminar */
         .btn-delete {
-            background-color: #fee2e2;
-            color: #b91c1c;
-            border: 1px solid #fecaca;
+            background-color: var(--danger-soft);
+            color: var(--danger-dark);
+            border: 1px solid var(--danger-soft-border);
         }
 
         .btn-delete:hover {
-            background-color: #dc2626;
+            background-color: var(--danger);
             color: white;
-            border-color: #dc2626;
+            border-color: var(--danger);
             transform: translateY(-1px);
         }
 
@@ -257,7 +257,7 @@
                             <!-- Visible para todos -->
                             <a href="{{ route('activities.qr.show', $activity->id) }}"
                                class="btn-action"
-                               style="background:#6366f1; color:white;">
+                               style="background:var(--brand-purple); color:var(--surface);">
                                 📱 Generar QR
                             </a>
 
@@ -292,7 +292,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="3" style="text-align:center; color:#6b7280; padding:30px;">
+                    <td colspan="3" style="text-align:center; color:var(--text-secondary); padding:30px;">
                         No hay actividades creadas aún. ¡Crea la primera para empezar! 🚀
                     </td>
                 </tr>

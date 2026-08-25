@@ -1,6 +1,7 @@
 @extends('layouts.app')
 @section('content')
 @include('teacher.partials.styles')
+<style>.module-eco{border-color:var(--brand-green)!important}.module-eco h2{color:var(--brand-green-dark)!important}.module-eco .teacher-btn{background:var(--brand-green)}.module-eco .teacher-btn:hover{background:var(--brand-green-dark)}.module-game{border-color:var(--brand-purple)!important}.module-game h2{color:var(--brand-purple-dark)!important}.module-game .teacher-btn{background:var(--brand-purple)}.module-game .teacher-btn:hover{background:var(--brand-purple-dark)}</style>
 @php($statusLabels = ['draft'=>'Preparada','open'=>'Abierta','closed'=>'Cerrada','archived'=>'Archivada'])
 <div class="teacher-shell">
     <div class="teacher-header">
@@ -27,23 +28,28 @@
         </div>
     </div>
 
-    <div class="teacher-card" style="margin-bottom:18px; display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap;">
-        <div><h2 style="color:#065f46; font-size:19px; margin:0 0 5px;">Misiones QR</h2><p class="teacher-meta">Selecciona actividades del catálogo y genera los códigos para distribuirlos.</p></div>
-        <a href="{{ route('teacher.missions.index', $room) }}" class="teacher-btn teacher-btn-primary">Administrar misiones</a>
+    <div class="teacher-card" style="margin-bottom:18px; display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap; border-color:var(--brand-blue-light);">
+        <div><h2 style="color:var(--brand-blue-dark); font-size:19px; margin:0 0 5px;">📊 Calcular mi huella</h2><p class="teacher-meta">Realiza el mismo cálculo que los estudiantes y conoce tu impacto anual. Tu resultado es personal y no se incluye en el reporte de la sala.</p></div>
+        <a href="{{ route('teacher.carbon.form', $room) }}" class="teacher-btn teacher-btn-primary">{{ $teacherHasFootprint ? 'Ver mi huella' : 'Calcular huella' }}</a>
+    </div>
+
+    <div class="teacher-card module-eco" style="margin-bottom:18px; display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap;">
+        <div><h2 style="color:var(--brand-green-dark); font-size:19px; margin:0 0 5px;">🧭 EcoBúsqueda</h2><p class="teacher-meta">Prepara la búsqueda individual de 15 minutos con QR ambientales permanentes.</p></div>
+        <a href="{{ route('teacher.eco-hunts.index', $room) }}" class="teacher-btn teacher-btn-primary">Preparar EcoBúsqueda</a>
+    </div>
+
+    <div class="teacher-card module-game" style="margin-bottom:18px; display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap;">
+        <div><h2 style="color:var(--brand-purple-dark); font-size:19px; margin:0 0 5px;">Juego del Impostor</h2><p class="teacher-meta">El profesor inicia y controla la ronda. Los premios se registran como aprendizaje y no reducen la huella.</p></div>
+        <form method="POST" action="{{ route('teacher.impostor.start', $room) }}">@csrf<button class="teacher-btn teacher-btn-primary" {{ $room->status !== 'open' ? 'disabled' : '' }}>Preparar o continuar juego</button></form>
     </div>
 
     <div class="teacher-card" style="margin-bottom:18px; display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap;">
-        <div><h2 style="color:#065f46; font-size:19px; margin:0 0 5px;">Resultados de la sala</h2><p class="teacher-meta">Consulta huellas iniciales, puntos y actividades realizadas. El reporte permanece disponible al cerrar la sala.</p></div>
+        <div><h2 style="color:var(--brand-blue-dark); font-size:19px; margin:0 0 5px;">Resultados de la sala</h2><p class="teacher-meta">Consulta huellas iniciales, puntos y actividades realizadas. El reporte permanece disponible al cerrar la sala.</p></div>
         <a href="{{ route('teacher.sessions.report', $room) }}" class="teacher-btn teacher-btn-secondary">Ver resultados</a>
     </div>
 
-    <div class="teacher-card" style="margin-bottom:18px; display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap;">
-        <div><h2 style="color:#065f46; font-size:19px; margin:0 0 5px;">Juego del Impostor</h2><p class="teacher-meta">El profesor inicia y controla la ronda. Los premios se registran como aprendizaje y no reducen la huella.</p></div>
-        <form method="POST" action="{{ route('teacher.impostor.start', $room) }}">@csrf<button class="teacher-btn teacher-btn-primary" {{ $room->status !== 'open' ? 'disabled' : '' }}>Iniciar o continuar juego</button></form>
-    </div>
-
     <div class="teacher-card">
-        <div class="teacher-header" style="margin-bottom:14px;"><div><h2 style="color:#065f46; font-size:19px; margin:0 0 5px;">Estudiantes conectados</h2><p class="teacher-meta">{{ $room->participants->count() }} participantes registrados</p></div><a href="{{ route('teacher.sessions.show', $room) }}" class="teacher-btn teacher-btn-secondary">↻ Actualizar</a></div>
+        <div class="teacher-header" style="margin-bottom:14px;"><div><h2 style="color:var(--brand-blue-dark); font-size:19px; margin:0 0 5px;">Estudiantes conectados</h2><p class="teacher-meta">{{ $room->participants->count() }} participantes registrados</p></div><a href="{{ route('teacher.sessions.show', $room) }}" class="teacher-btn teacher-btn-secondary">↻ Actualizar</a></div>
         <div class="teacher-list">
             @forelse($room->participants as $participant)
                 @php($isRecentlyActive = ($participant->last_seen_at ?? $participant->updated_at)->gt(now()->subMinutes(5)))

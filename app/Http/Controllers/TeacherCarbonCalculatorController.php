@@ -41,6 +41,13 @@ class TeacherCarbonCalculatorController extends Controller
             'formUrl' => route('teacher.carbon.form', $room),
             'impactUrl' => route('teacher.carbon.impact', $room),
             'panelUrl' => route('teacher.sessions.show', $room),
+            'breadcrumbItems' => [
+                ['label' => 'Área docente', 'url' => route('teacher.dashboard')],
+                ['label' => 'Cursos', 'url' => route('teacher.courses.index')],
+                ['label' => $room->course?->name ?? 'Curso', 'url' => route('teacher.courses.show', $room->course_id)],
+                ['label' => $room->name, 'url' => route('teacher.sessions.show', $room)],
+                ['label' => 'Calcular huella'],
+            ],
         ]);
     }
 
@@ -88,6 +95,14 @@ class TeacherCarbonCalculatorController extends Controller
             'impact' => $impact,
             'formUrl' => route('teacher.carbon.form', $room),
             'panelUrl' => route('teacher.sessions.show', $room),
+            'breadcrumbItems' => [
+                ['label' => 'Área docente', 'url' => route('teacher.dashboard')],
+                ['label' => 'Cursos', 'url' => route('teacher.courses.index')],
+                ['label' => $room->course?->name ?? 'Curso', 'url' => route('teacher.courses.show', $room->course_id)],
+                ['label' => $room->name, 'url' => route('teacher.sessions.show', $room)],
+                ['label' => 'Calcular huella', 'url' => route('teacher.carbon.form', $room)],
+                ['label' => 'Impacto en cifras'],
+            ],
         ]);
     }
 

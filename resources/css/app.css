@@ -51,6 +51,47 @@
     .ui-btn-game:hover { background:var(--brand-purple-dark); }
     .ui-btn-danger { background:var(--danger); color:var(--surface); }
     .ui-btn-danger:hover { background:var(--danger-dark); }
+
+    .sync-status {
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
+        min-height:34px;
+        max-width:100%;
+        padding:7px 11px;
+        border:1px solid var(--brand-blue-soft-border);
+        border-radius:999px;
+        background:var(--info-soft);
+        color:var(--brand-blue-dark);
+        font-size:13px;
+        line-height:1.35;
+        font-weight:800;
+    }
+    .sync-status::before {
+        content:'';
+        width:9px;
+        height:9px;
+        flex:none;
+        border-radius:50%;
+        background:currentColor;
+    }
+    .sync-status--checking::before { animation:sync-status-pulse 1s ease-in-out infinite; }
+    .sync-status--online,
+    .sync-status--recovered {
+        border-color:var(--brand-green-soft-border);
+        background:var(--positive-soft);
+        color:var(--brand-green-dark);
+    }
+    .sync-status--offline {
+        border-color:var(--warning-orange);
+        background:var(--warning-soft);
+        color:var(--text-primary);
+    }
+    .sync-status--offline::before { background:var(--warning-orange); }
+
+    @keyframes sync-status-pulse {
+        50% { opacity:.35; transform:scale(.78); }
+    }
 }
 
 /* Compatibilidad visual para vistas heredadas con estilos locales. */
@@ -70,3 +111,91 @@
 .join-card .form-input:focus { border-color:var(--brand-blue) !important; box-shadow:0 0 0 3px var(--focus-ring) !important; }
 .join-card .btn-enter { background:var(--brand-blue) !important; color:var(--surface) !important; }
 .join-card .btn-enter:hover { background:var(--brand-blue-dark) !important; }
+
+/* Confirmaciones críticas: controles amplios y legibles también en teléfonos. */
+.it-swal-popup { border-radius:22px !important; padding:24px !important; color:var(--text-primary) !important; }
+.it-swal-title { color:var(--text-primary) !important; font-size:1.55rem !important; line-height:1.25 !important; }
+.it-swal-text { color:var(--text-secondary) !important; font-size:1rem !important; line-height:1.55 !important; }
+.it-swal-actions { width:100% !important; gap:10px !important; margin:24px 0 0 !important; }
+.it-confirm-button {
+    min-height:48px;
+    min-width:140px;
+    border:0;
+    border-radius:12px;
+    padding:12px 18px;
+    font-size:1rem;
+    font-weight:800;
+    cursor:pointer;
+    transition:background-color .18s ease, transform .18s ease;
+}
+.it-confirm-button:hover { transform:translateY(-1px); }
+.it-confirm-button:focus-visible { outline:3px solid var(--brand-blue-light); outline-offset:3px; }
+.it-confirm-button--primary { background:var(--brand-blue); color:var(--surface); }
+.it-confirm-button--primary:hover { background:var(--brand-blue-dark); }
+.it-confirm-button--positive { background:var(--brand-green); color:var(--surface); }
+.it-confirm-button--positive:hover { background:var(--brand-green-dark); }
+.it-confirm-button--game { background:var(--brand-purple); color:var(--surface); }
+.it-confirm-button--game:hover { background:var(--brand-purple-dark); }
+.it-confirm-button--danger { background:var(--danger); color:var(--surface); }
+.it-confirm-button--danger:hover { background:var(--danger-dark); }
+.it-confirm-button--cancel { background:var(--surface-muted); color:var(--text-primary); border:1px solid var(--border); }
+.it-confirm-button--cancel:hover { background:var(--border); }
+.it-swal-toast { border:1px solid var(--brand-green); border-radius:14px !important; box-shadow:0 12px 30px rgba(17,24,39,.14) !important; }
+.it-swal-toast-title { color:var(--text-primary) !important; font-size:.98rem !important; line-height:1.4 !important; }
+
+.teacher-breadcrumbs {
+    width:100%;
+    max-width:1050px;
+    margin:0 auto 16px;
+    overflow-x:auto;
+    overscroll-behavior-x:contain;
+    scrollbar-width:none;
+}
+.teacher-breadcrumbs::-webkit-scrollbar { display:none; }
+.teacher-breadcrumbs ol {
+    display:flex;
+    align-items:center;
+    width:max-content;
+    min-width:100%;
+    margin:0;
+    padding:0;
+    list-style:none;
+    white-space:nowrap;
+}
+.teacher-breadcrumbs-item {
+    display:flex;
+    align-items:center;
+    min-width:0;
+    color:var(--text-secondary);
+    font-size:13px;
+    line-height:1.4;
+    font-weight:650;
+}
+.teacher-breadcrumbs-item + .teacher-breadcrumbs-item::before {
+    content:'›';
+    flex:none;
+    margin:0 8px;
+    color:color-mix(in srgb,var(--text-secondary) 60%,var(--surface));
+}
+.teacher-breadcrumbs a {
+    color:var(--brand-blue-dark);
+    text-decoration:none;
+}
+.teacher-breadcrumbs a:hover { text-decoration:underline; }
+.teacher-breadcrumbs-item[aria-current='page'] span {
+    display:block;
+    max-width:280px;
+    overflow:hidden;
+    color:var(--text-primary);
+    text-overflow:ellipsis;
+}
+
+@media (max-width: 520px) {
+    .it-swal-popup { width:calc(100% - 28px) !important; padding:20px 16px !important; }
+    .it-swal-actions { flex-direction:column-reverse !important; }
+    .it-confirm-button { width:100%; margin:0 !important; }
+    .it-swal-toast { width:calc(100vw - 24px) !important; margin:12px !important; }
+    .teacher-breadcrumbs { margin-bottom:12px; }
+    .teacher-breadcrumbs-item:not(:first-child):not(:nth-last-child(-n + 2)) { display:none; }
+    .teacher-breadcrumbs-item[aria-current='page'] span { max-width:145px; }
+}

@@ -10,6 +10,7 @@ class RoomReportService
     public function __construct(
         private readonly CarbonCalculator $carbonCalculator,
         private readonly EcoHuntService $ecoHuntService,
+        private readonly ExportResultsService $exportResultsService,
     ) {}
 
     public function build(Room $room): array
@@ -17,7 +18,11 @@ class RoomReportService
         $room->load('course');
 
         $participants = $room->participants()
-            ->with(['currentCarbonFootprint', 'activityCompletions.activity'])
+            ->with([
+                'currentCarbonFootprint',
+                'activityCompletions.activity',
+                'ecoHuntCompletions.activity',
+            ])
             ->withSum('pointTransactions as total_points', 'points')
             ->withSum([
                 'pointTransactions as action_points' => fn ($query) => $query
@@ -28,14 +33,15 @@ class RoomReportService
                     ->where('category', PointTransaction::CATEGORY_LEARNING),
             ], 'points')
             ->withSum('activityCompletions as projected_reduction', 'annual_co2_reduction_awarded')
-            ->withCount('activityCompletions')
+            ->withCount(['activityCompletions', 'ecoHuntCompletions'])
             ->orderBy('name')
             ->get()
             ->each(function ($participant): void {
                 $participant->total_points = (int) ($participant->total_points ?? 0);
                 $participant->action_points = (int) ($participant->action_points ?? 0);
                 $participant->learning_points = (int) ($participant->learning_points ?? 0);
-                $participant->activity_completions_count = (int) $participant->activity_completions_count;
+                $participant->activity_completions_count = (int) $participant->activity_completions_count
+                    + (int) $participant->eco_hunt_completions_count;
                 $participant->projected_reduction = $participant->projected_reduction !== null
                     ? (float) $participant->projected_reduction
                     : null;
@@ -67,28 +73,32 @@ class RoomReportService
                     $hunt->effective_seconds = $hunt->started_at
                         ->diffInSeconds($hunt->finished_at ?? min(now(), $hunt->ends_at ?? now()));
                 }
+
                 return $hunt;
             });
+
+        $summary = [
+            'participants' => $participants->count(),
+            'footprints_calculated' => $footprints->count(),
+            'average_footprint' => $averageFootprint,
+            'average_footprint_classification' => $averageFootprint !== null
+                ? $this->carbonCalculator->classification($averageFootprint)
+                : null,
+            'total_points' => $participants->sum('total_points'),
+            'action_points' => $participants->sum('action_points'),
+            'learning_points' => $participants->sum('learning_points'),
+            'completed_activities' => $participants->sum('activity_completions_count'),
+            'quantified_reduction' => $participants->contains(fn ($participant) => $participant->projected_reduction !== null)
+                ? round($participants->sum('projected_reduction'), 2)
+                : null,
+        ];
 
         return [
             'room' => $room,
             'participants' => $participants,
             'ecoHunts' => $ecoHunts,
-            'summary' => [
-                'participants' => $participants->count(),
-                'footprints_calculated' => $footprints->count(),
-                'average_footprint' => $averageFootprint,
-                'average_footprint_classification' => $averageFootprint !== null
-                    ? $this->carbonCalculator->classification($averageFootprint)
-                    : null,
-                'total_points' => $participants->sum('total_points'),
-                'action_points' => $participants->sum('action_points'),
-                'learning_points' => $participants->sum('learning_points'),
-                'completed_activities' => $participants->sum('activity_completions_count'),
-                'quantified_reduction' => $participants->contains(fn ($participant) => $participant->projected_reduction !== null)
-                    ? round($participants->sum('projected_reduction'), 2)
-                    : null,
-            ],
+            'summary' => $summary,
+            'exportResults' => $this->exportResultsService->build($room, $participants, $ecoHunts, $summary),
         ];
     }
 }

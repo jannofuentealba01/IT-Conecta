@@ -53,6 +53,62 @@ class TeacherEcoHuntFoundationTest extends TestCase
         $this->assertEqualsCanonicalizing($activityIds, $hunt->activities()->pluck('activities.id')->all());
     }
 
+    public function test_teacher_sees_bulk_selection_controls_and_real_catalog_count(): void
+    {
+        $this->seed(EcoHuntActivitySeeder::class);
+        [$teacher, $room] = $this->teacherAndRoom();
+
+        $this->actingAs($teacher)
+            ->get(route('teacher.eco-hunts.index', $room))
+            ->assertOk()
+            ->assertSee('Seleccionar todas')
+            ->assertSee('Deseleccionar todas')
+            ->assertSee('id="totalCount">20</strong>', false)
+            ->assertSee('id="selectAllActivities"', false)
+            ->assertSee('id="clearAllActivities"', false);
+    }
+
+    public function test_sticky_bar_exposes_the_critical_action_for_each_hunt_state(): void
+    {
+        $this->seed(EcoHuntActivitySeeder::class);
+        [$teacher, $room] = $this->teacherAndRoom();
+        $activity = EcoActivityProfile::firstOrFail()->activity;
+        $hunt = EcoHunt::create([
+            'room_id' => $room->id,
+            'name' => 'Flujo sticky',
+            'status' => EcoHunt::STATUS_READY,
+            'duration_seconds' => 900,
+        ]);
+        $hunt->activities()->attach($activity->id);
+
+        $this->actingAs($teacher)
+            ->get(route('teacher.eco-hunts.index', $room))
+            ->assertOk()
+            ->assertSee('id="ecoStickyActions"', false)
+            ->assertSee('sticky-action-bar--positive')
+            ->assertSeeInOrder(['Guardar selección', 'Iniciar EcoBúsqueda'])
+            ->assertSee('data-confirm-title="¿Iniciar EcoBúsqueda?"', false)
+            ->assertSee('data-confirm-variant="positive"', false)
+            ->assertDontSee('return confirm(', false)
+            ->assertSee('Guarda los cambios antes de iniciar.');
+
+        $hunt->update([
+            'status' => EcoHunt::STATUS_ACTIVE,
+            'started_at' => now(),
+            'ends_at' => now()->addMinutes(15),
+        ]);
+
+        $this->actingAs($teacher)
+            ->get(route('teacher.eco-hunts.index', $room))
+            ->assertOk()
+            ->assertSee('EcoBúsqueda activa')
+            ->assertSee('sticky-action-bar--danger')
+            ->assertSee('data-confirm-title="¿Finalizar EcoBúsqueda?"', false)
+            ->assertSee('data-confirm-variant="danger"', false)
+            ->assertSee('Finalizar actividad')
+            ->assertDontSee('Iniciar EcoBúsqueda');
+    }
+
     public function test_teacher_cannot_prepare_hunt_with_an_activity_outside_catalog(): void
     {
         $this->seed(EcoHuntActivitySeeder::class);

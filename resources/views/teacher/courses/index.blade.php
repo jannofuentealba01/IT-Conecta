@@ -2,6 +2,10 @@
 @section('content')
 @include('teacher.partials.styles')
 <div class="teacher-shell">
+    <x-breadcrumbs :items="[
+        ['label' => 'Área docente', 'url' => route('teacher.dashboard')],
+        ['label' => 'Cursos'],
+    ]" />
     <div class="teacher-header">
         <div><p class="teacher-eyebrow">Gestión docente</p><h1 class="teacher-title">Cursos</h1><p class="teacher-subtitle">Cada curso conserva el historial de todas sus sesiones.</p></div>
         <a href="{{ route('teacher.courses.create') }}" class="teacher-btn teacher-btn-primary">＋ Crear curso</a>

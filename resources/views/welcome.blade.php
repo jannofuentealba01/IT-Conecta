@@ -23,7 +23,7 @@
             align-items: center;
             color: white;
             padding: 20px;
-            padding-bottom: 100px; /* Espacio para el footer */
+            padding-bottom: 115px; /* Espacio para el footer y patrocinio */
         }
 
         /* Contenedor Principal */
@@ -143,18 +143,6 @@
             text-align: left;
         }
 
-        .alert-success {
-            background: var(--positive-soft);
-            border: 1px solid var(--brand-green);
-            color: var(--brand-green-dark);
-            padding: 12px;
-            border-radius: 10px;
-            margin-bottom: 16px;
-            font-size: 13px;
-            font-weight: 600;
-            text-align: left;
-        }
-
         /* Sección Separada de Autenticación (Abajo) */
         .auth-actions {
             margin-top: 24px;
@@ -225,7 +213,6 @@
             width: 100%;
             text-align: center;
             font-size: 12px;
-            opacity: 0.85;
             line-height: 1.5;
             pointer-events: none;
         }
@@ -237,26 +224,54 @@
             color: var(--brand-blue-light);
         }
 
-        .footer .system-status {
-            display: inline-flex;
+        .footer .sponsor {
+            display: flex;
             align-items: center;
-            gap: 6px;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 3px 10px;
-            border-radius: 20px;
-            margin-bottom: 6px;
+            justify-content: center;
+            gap: 8px;
+            width: max-content;
+            max-width: calc(100% - 24px);
+            margin: 0 auto 6px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
         }
 
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background-color: var(--brand-green);
-            border-radius: 50%;
-            box-shadow: 0 0 8px var(--brand-green);
+        .footer .sponsor-logo {
+            display: block;
+            width: 82px;
+            height: auto;
+            padding: 3px 5px;
+            border-radius: 7px;
+            background: white;
+        }
+
+        .footer > p {
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        @media (max-width: 640px) {
+            .footer .sponsor-logo {
+                width: 110px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .footer .sponsor {
+                gap: 6px;
+                font-size: 11px;
+            }
+
+            .footer .sponsor-logo {
+                width: 96px;
+            }
         }
     </style>
 </head>
 <body>
+
+    <x-flash-feedback />
 
     <div class="container">
         
@@ -276,17 +291,6 @@
                 @else
                     <h2>🎮 Únete a una Sala</h2>
                     <p class="subtitle">Ingresa el código que te dio tu profesor para comenzar.</p>
-
-                    <!-- Mensajes de Error -->
-                    @if (session('success'))
-                        <div class="alert-success">✅ {{ session('success') }}</div>
-                    @endif
-
-                    @if (session('error'))
-                        <div class="alert-error">
-                            ❌ {{ session('error') }}
-                        </div>
-                    @endif
 
                     @if ($errors->any())
                         <div class="alert-error">
@@ -318,7 +322,7 @@
         <!-- Sección Separada para Registro / Inicio de Sesión de Profesores -->
         @if (Route::has('login') && !auth()->check())
             <div class="auth-actions">
-                <p>¿Eres docente o deseas administrar?</p>
+                <p>¿Eres docente?</p>
                 <div class="auth-buttons-group">
                     <a href="{{ route('login') }}" class="btn-auth-secondary">Iniciar Sesión</a>
                     @if (Route::has('register'))
@@ -332,9 +336,13 @@
         <div class="footer">
             <div class="tagline">⚡️ Escanea. Suma. Reduce.</div>
             
-            <div class="system-status">
-                <span class="status-dot"></span>
-                <span>Plataforma Activa</span>
+            <div class="sponsor">
+                <span>Patrocinado por:</span>
+                <img
+                    class="sponsor-logo"
+                    src="{{ asset('images/ucsc-patrocinio.png') }}"
+                    alt="UCSC"
+                >
             </div>
             
             <p>© {{ date('Y') }} IT Conecta • Acción Climática Escolar</p>

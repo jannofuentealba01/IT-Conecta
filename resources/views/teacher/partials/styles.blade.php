@@ -1,26 +1,43 @@
 <style>
     .teacher-shell { max-width: 1050px; margin: 0 auto; }
     .teacher-header { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:22px; flex-wrap:wrap; }
-    .teacher-eyebrow { color:var(--brand-blue); font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; margin:0 0 6px; }
-    .teacher-title { color:var(--text-primary); font-size:28px; line-height:1.2; margin:0 0 7px; }
-    .teacher-subtitle { color:var(--text-secondary); margin:0; line-height:1.5; }
+    .teacher-eyebrow { color:var(--brand-blue); font-size:12px; line-height:1.35; font-weight:800; text-transform:uppercase; letter-spacing:.08em; margin:0 0 6px; }
+    .teacher-title { color:var(--text-primary); font-size:28px; line-height:1.2; font-weight:850; letter-spacing:-.02em; margin:0 0 7px; }
+    .teacher-subtitle { color:var(--text-secondary); font-size:15px; font-weight:450; margin:0; line-height:1.55; }
+    .teacher-section-title { color:var(--text-primary); font-size:20px; line-height:1.3; font-weight:800; margin:0 0 6px; }
+    .teacher-section-title--brand { color:var(--brand-blue-dark); }
+    .teacher-section-title--positive { color:var(--brand-green-dark); }
+    .teacher-section-title--game { color:var(--brand-purple-dark); }
+    .teacher-section-title--danger { color:var(--danger-dark); }
+    .teacher-section-title--inverse { color:var(--surface); }
+    .teacher-card-title { color:var(--text-primary); font-size:17px; line-height:1.35; font-weight:800; margin:0 0 5px; }
+    .teacher-body { color:var(--text-primary); font-size:15px; line-height:1.6; font-weight:400; }
     .teacher-card { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:22px; box-shadow:0 10px 28px rgba(17,24,39,.07); }
     .teacher-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:15px; }
     .teacher-stat { background:linear-gradient(145deg,var(--info-soft),var(--surface)); border:1px solid var(--brand-blue-light); border-radius:15px; padding:18px; }
     .teacher-stat strong { display:block; color:var(--brand-blue-dark); font-size:28px; margin-top:6px; }
-    .teacher-btn { min-height:48px; display:inline-flex; justify-content:center; align-items:center; gap:7px; border:0; border-radius:10px; padding:11px 16px; font-weight:750; text-decoration:none; cursor:pointer; font-size:14px; }
+    .teacher-btn { min-height:48px; display:inline-flex; justify-content:center; align-items:center; gap:7px; border:1px solid transparent; border-radius:10px; padding:11px 16px; font-weight:750; text-decoration:none; cursor:pointer; font-size:14px; transition:background-color .18s ease,border-color .18s ease,color .18s ease,transform .18s ease; }
+    .teacher-btn:hover:not(:disabled) { transform:translateY(-1px); }
+    .teacher-btn:focus-visible { outline:3px solid var(--brand-blue-light); outline-offset:2px; }
     .teacher-btn:disabled { opacity:.55; cursor:not-allowed; }
     .teacher-btn-primary { background:var(--brand-blue); color:var(--surface); }
     .teacher-btn-primary:hover { background:var(--brand-blue-dark); }
-    .teacher-btn-secondary { background:var(--info-soft); color:var(--brand-blue-dark); border:1px solid var(--brand-blue-light); }
+    .teacher-btn-positive { background:var(--brand-green); color:var(--surface); }
+    .teacher-btn-positive:hover { background:var(--brand-green-dark); }
+    .teacher-btn-game { background:var(--brand-purple); color:var(--surface); }
+    .teacher-btn-game:hover { background:var(--brand-purple-dark); }
+    .teacher-btn-secondary { background:var(--surface); color:var(--brand-blue-dark); border-color:var(--brand-blue-light); }
     .teacher-btn-secondary:hover { background:color-mix(in srgb,var(--brand-blue) 18%,var(--surface)); }
-    .teacher-btn-danger { background:var(--danger); color:var(--surface); border:1px solid var(--danger); }
+    .teacher-btn-danger { background:var(--danger); color:var(--surface); border-color:var(--danger); }
     .teacher-btn-danger:hover { background:var(--danger-dark); }
+    .teacher-btn-danger-subtle { background:var(--surface); color:var(--danger-dark); border-color:var(--danger-soft-border); }
+    .teacher-btn-danger-subtle:hover { background:var(--danger-soft); border-color:var(--danger); }
     .teacher-btn-muted { background:var(--surface-muted); color:var(--text-secondary); border:1px solid var(--border); }
+    .teacher-btn-muted:hover { background:var(--border); color:var(--text-primary); }
     .teacher-list { display:flex; flex-direction:column; gap:12px; }
     .teacher-row { display:flex; justify-content:space-between; align-items:center; gap:15px; border:1px solid var(--border); border-radius:13px; padding:16px; flex-wrap:wrap; }
-    .teacher-row h3 { color:var(--text-primary); margin:0 0 5px; font-size:17px; }
-    .teacher-meta { color:var(--text-secondary); font-size:13px; margin:0; }
+    .teacher-row h3 { color:var(--text-primary); margin:0 0 5px; font-size:17px; line-height:1.35; font-weight:800; }
+    .teacher-meta { color:var(--text-secondary); font-size:13px; line-height:1.5; font-weight:450; margin:0; }
     .teacher-badge { display:inline-flex; border-radius:999px; padding:5px 10px; font-size:12px; font-weight:800; }
     .status-draft { background:var(--surface-muted); color:var(--text-secondary); }
     .status-open { background:var(--positive-soft); color:var(--brand-green-dark); }
@@ -33,5 +50,5 @@
     .teacher-error { color:var(--danger-dark); font-size:13px; margin-top:5px; }
     .session-code { color:var(--brand-blue-dark); font-size:clamp(48px,10vw,88px); letter-spacing:.13em; font-weight:900; text-align:center; margin:12px 0; font-variant-numeric:tabular-nums; }
     .empty-state { color:var(--text-secondary); text-align:center; padding:30px 15px; border:1px dashed var(--border); border-radius:13px; }
-    @media (max-width:640px) { .teacher-title { font-size:23px; } .teacher-card { padding:17px; } .teacher-btn { width:100%; } }
+    @media (max-width:640px) { .teacher-title { font-size:23px; } .teacher-section-title { font-size:18px; } .teacher-card-title { font-size:16px; } .teacher-card { padding:17px; } .teacher-btn { width:100%; } }
 </style>

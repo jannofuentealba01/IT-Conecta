@@ -36,13 +36,24 @@ class AuthenticatedSessionController extends Controller
             ]);
         }
 
+        $request->session()->forget([
+            'participant_id',
+            'participant_name',
+            'participant_course',
+            'room_id',
+            'room_code',
+        ]);
         $request->session()->regenerate();
 
         $destination = $user->rol === 'admin'
             ? route('admin.teachers.index', absolute: false)
             : route('teacher.dashboard', absolute: false);
 
-        return redirect()->intended($destination);
+        // Cada rol vuelve siempre a su propia área. Así una URL protegida
+        // visitada antes del acceso no puede enviar al usuario al panel ajeno.
+        $request->session()->forget('url.intended');
+
+        return redirect($destination);
     }
 
     /**

@@ -9,14 +9,15 @@ use App\Models\Room;
 use App\Models\User;
 use App\Services\ImpostorGameService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use Illuminate\Support\Carbon;
+use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\TestCase;
 
 class ImpostorVotingTest extends TestCase
 {
     use RefreshDatabase;
 
-    #[\PHPUnit\Framework\Attributes\DataProvider('impostorScale')]
+    #[DataProvider('impostorScale')]
     public function test_impostor_quantity_scale(int $participants, int $expected): void
     {
         $this->assertSame($expected, app(ImpostorGameService::class)->impostorCountFor($participants));
@@ -110,6 +111,10 @@ class ImpostorVotingTest extends TestCase
             'status' => 'voting',
             'active_marker' => 1,
             'impostor_id' => $suspect->id,
+            'started_at' => now()->subMinutes(4),
+            'voting_at' => now(),
+            'closes_at' => now()->addMinute(),
+            'results_at' => now()->addSeconds(90),
         ]);
 
         $voteResponse = $this->withSession([
@@ -157,6 +162,86 @@ class ImpostorVotingTest extends TestCase
         $this->assertTrue($game->closes_at->equalTo(now()->addMinute()));
         $this->assertTrue($game->results_at->equalTo(now()->addSeconds(90)));
         Carbon::setTestNow();
+    }
+
+    public function test_student_state_reflects_teacher_early_voting_without_reloading_the_page(): void
+    {
+        Carbon::setTestNow('2026-08-12 09:00:00');
+        [$teacher, $room, $voter, $suspect] = $this->timedGameContext();
+        $game = ImpostorGame::create([
+            'room_id' => $room->id, 'word' => 'Reciclaje', 'status' => 'playing',
+            'active_marker' => 1, 'impostor_id' => $suspect->id,
+            'started_at' => now(), 'voting_at' => now()->addMinutes(4),
+            'closes_at' => now()->addMinutes(5), 'results_at' => now()->addMinutes(5)->addSeconds(30),
+        ]);
+
+        Carbon::setTestNow('2026-08-12 09:02:03');
+        $this->actingAs($teacher)
+            ->post(route('teacher.impostor.voting', $game))
+            ->assertRedirect();
+
+        $this->withSession(['participant_id' => $voter->id, 'room_id' => $room->id])
+            ->getJson(route('student.impostor.state', $game))
+            ->assertOk()
+            ->assertJsonPath('status', 'voting')
+            ->assertJsonPath('closes_at', now()->addMinute()->toIso8601String())
+            ->assertJsonPath('results_at', now()->addSeconds(90)->toIso8601String());
+
+        Carbon::setTestNow();
+    }
+
+    public function test_teacher_state_exposes_the_show_results_window_and_then_finishes_automatically(): void
+    {
+        Carbon::setTestNow('2026-08-12 09:30:00');
+        [$teacher, $room, $voter, $suspect] = $this->timedGameContext();
+        $game = ImpostorGame::create([
+            'room_id' => $room->id, 'word' => 'Reciclaje', 'status' => 'voting',
+            'active_marker' => 1, 'impostor_id' => $suspect->id,
+            'started_at' => now()->subMinutes(5), 'voting_at' => now()->subMinute(),
+            'closes_at' => now(), 'results_at' => now()->addSeconds(30),
+        ]);
+
+        $this->actingAs($teacher)
+            ->getJson(route('teacher.impostor.state', $game))
+            ->assertOk()
+            ->assertJsonPath('status', 'closed')
+            ->assertJsonPath('results_url', null);
+
+        $this->actingAs($teacher)
+            ->get(route('teacher.impostor.show', $game))
+            ->assertOk()
+            ->assertSee('id="teacherClosedControls"', false)
+            ->assertSee('Mostrar resultados');
+
+        Carbon::setTestNow('2026-08-12 09:30:30');
+        $this->actingAs($teacher)
+            ->getJson(route('teacher.impostor.state', $game))
+            ->assertOk()
+            ->assertJsonPath('status', 'finished')
+            ->assertJsonPath('results_url', route('teacher.impostor.results', $game));
+
+        Carbon::setTestNow();
+    }
+
+    public function test_student_cannot_read_the_state_of_a_game_from_another_room(): void
+    {
+        [, $room, $participant] = $this->timedGameContext();
+        [, $otherRoom, , $otherParticipant] = $this->timedGameContext();
+        $game = ImpostorGame::create([
+            'room_id' => $otherRoom->id,
+            'word' => 'Reciclaje',
+            'status' => 'playing',
+            'active_marker' => 1,
+            'impostor_id' => $otherParticipant->id,
+            'started_at' => now(),
+            'voting_at' => now()->addMinutes(4),
+            'closes_at' => now()->addMinutes(5),
+            'results_at' => now()->addMinutes(5)->addSeconds(30),
+        ]);
+
+        $this->withSession(['participant_id' => $participant->id, 'room_id' => $room->id])
+            ->getJson(route('student.impostor.state', $game))
+            ->assertNotFound();
     }
 
     public function test_teacher_can_only_show_results_during_the_thirty_second_window(): void
@@ -248,6 +333,142 @@ class ImpostorVotingTest extends TestCase
         $this->assertSame('finished', $game->fresh()->status);
         $this->assertNull($game->fresh()->active_marker);
         Carbon::setTestNow();
+    }
+
+    public function test_student_state_recovers_after_a_prolonged_connection_interruption(): void
+    {
+        Carbon::setTestNow('2026-08-21 13:00:00');
+        [, $room, $participant, $impostor] = $this->timedGameContext();
+        $game = ImpostorGame::create([
+            'room_id' => $room->id,
+            'word' => 'Reciclaje',
+            'status' => 'playing',
+            'active_marker' => 1,
+            'impostor_id' => $impostor->id,
+            'started_at' => now(),
+            'voting_at' => now()->addMinutes(4),
+            'closes_at' => now()->addMinutes(5),
+            'results_at' => now()->addMinutes(5)->addSeconds(30),
+        ]);
+        $game->impostors()->attach($impostor->id);
+
+        // El teléfono vuelve a consultar cuando ya transcurrieron juego,
+        // votación y espera de resultados sin ninguna sincronización intermedia.
+        Carbon::setTestNow('2026-08-21 13:06:00');
+
+        $this->withSession([
+            'participant_id' => $participant->id,
+            'room_id' => $room->id,
+            'room_code' => $room->code,
+        ])->getJson(route('student.impostor.state', $game))
+            ->assertOk()
+            ->assertJsonPath('status', 'finished')
+            ->assertJsonPath('results_url', route('student.impostor.results', $game));
+
+        $game->refresh();
+        $this->assertSame('finished', $game->status);
+        $this->assertNull($game->active_marker);
+        Carbon::setTestNow();
+    }
+
+    public function test_student_can_open_results_when_the_round_ended_without_votes(): void
+    {
+        Carbon::setTestNow('2026-08-21 12:00:00');
+        [$teacher, $room, $participant, $impostor] = $this->timedGameContext();
+        $game = ImpostorGame::create([
+            'room_id' => $room->id, 'word' => 'Reciclaje', 'status' => 'closed',
+            'active_marker' => 1, 'impostor_id' => $impostor->id,
+            'started_at' => now()->subMinutes(5), 'voting_at' => now()->subMinute(),
+            'closes_at' => now(), 'results_at' => now(),
+        ]);
+
+        $session = ['participant_id' => $participant->id, 'room_id' => $room->id, 'room_code' => $room->code];
+        $this->withSession($session)->get(route('student.impostor.show', $game))
+            ->assertRedirect(route('student.impostor.results', $game));
+        $this->withSession($session)->get(route('student.impostor.results', $game))
+            ->assertOk()->assertSee('No se registraron votos en esta ronda.');
+        $this->assertSame('finished', $game->fresh()->status);
+        Carbon::setTestNow();
+    }
+
+    public function test_teacher_can_open_results_when_the_round_ended_without_votes(): void
+    {
+        Carbon::setTestNow('2026-08-21 12:00:00');
+        [$teacher, $room, , $impostor] = $this->timedGameContext();
+        $game = ImpostorGame::create([
+            'room_id' => $room->id, 'word' => 'Reciclaje', 'status' => 'finished',
+            'active_marker' => null, 'impostor_id' => $impostor->id,
+            'started_at' => now()->subMinutes(5), 'voting_at' => now()->subMinute(),
+            'closes_at' => now(), 'results_at' => now(),
+        ]);
+
+        $this->actingAs($teacher)->get(route('teacher.impostor.results', $game))
+            ->assertOk()->assertSee('No se registraron votos en esta ronda.');
+        Carbon::setTestNow();
+    }
+
+    public function test_incomplete_active_game_is_closed_and_hidden_from_students(): void
+    {
+        [, $room, $participant, $impostor] = $this->timedGameContext();
+        $game = ImpostorGame::create([
+            'room_id' => $room->id,
+            'word' => 'Reciclaje',
+            'status' => 'playing',
+            'active_marker' => 1,
+            'impostor_id' => $impostor->id,
+        ]);
+
+        $this->withSession([
+            'participant_id' => $participant->id,
+            'room_id' => $room->id,
+            'room_code' => $room->code,
+        ])->get(route('student.impostor.lobby'))
+            ->assertOk()
+            ->assertSee('Esperando al profesor');
+
+        $game->refresh();
+        $this->assertSame('finished', $game->status);
+        $this->assertNull($game->active_marker);
+    }
+
+    public function test_teacher_prepare_replaces_an_incomplete_active_game_with_a_clean_waiting_round(): void
+    {
+        [, $room, , $impostor] = $this->timedGameContext();
+        $invalidGame = ImpostorGame::create([
+            'room_id' => $room->id,
+            'word' => 'Reciclaje',
+            'status' => 'playing',
+            'active_marker' => 1,
+            'impostor_id' => $impostor->id,
+        ]);
+
+        $newGame = app(ImpostorGameService::class)->prepare($room);
+
+        $invalidGame->refresh();
+        $this->assertSame('finished', $invalidGame->status);
+        $this->assertNull($invalidGame->active_marker);
+        $this->assertNotSame($invalidGame->id, $newGame->id);
+        $this->assertSame('waiting', $newGame->status);
+        $this->assertSame(1, (int) $newGame->active_marker);
+        $this->assertNull($newGame->word);
+        $this->assertNull($newGame->started_at);
+    }
+
+    public function test_active_game_in_a_closed_room_is_closed_and_not_available(): void
+    {
+        [, $room] = $this->timedGameContext();
+        $game = ImpostorGame::create([
+            'room_id' => $room->id,
+            'status' => 'waiting',
+            'active_marker' => 1,
+        ]);
+        $room->update(['status' => 'closed', 'closed_at' => now()]);
+
+        $this->assertNull(app(ImpostorGameService::class)->activeGame($room->fresh()));
+
+        $game->refresh();
+        $this->assertSame('finished', $game->status);
+        $this->assertNull($game->active_marker);
     }
 
     private function timedGameContext(): array

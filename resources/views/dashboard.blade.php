@@ -145,10 +145,6 @@
         .progress-stat strong { display:block; color:var(--brand-blue-dark); font-size:23px; margin-top:4px; }
         .exit-room { display:block;width:100%;min-height:48px;text-align:center;background:var(--danger-soft);color:var(--danger-dark);border:1px solid var(--danger);padding:12px;border-radius:12px;font-weight:600;font-size:14px;transition:all .2s;cursor:pointer; }
         .exit-room:hover { background:var(--danger);color:var(--surface); }
-        .dashboard-alert { padding:13px 15px; border-radius:12px; margin-bottom:18px; font-size:14px; font-weight:700; }
-        .dashboard-alert-error { background:var(--danger-soft); color:var(--danger-dark); border:1px solid var(--danger); }
-        .dashboard-alert-success { background:var(--positive-soft); color:var(--brand-green-dark); border:1px solid var(--brand-green); }
-
         /* FOOTER */
         .footer {
             margin-top: 30px;
@@ -193,8 +189,7 @@
 
     @include('student.partials.identity-bar', ['participant' => $participant])
 
-    @if(session('error'))<div class="dashboard-alert dashboard-alert-error">{{ session('error') }}</div>@endif
-    @if(session('success'))<div class="dashboard-alert dashboard-alert-success">{{ session('success') }}</div>@endif
+    <x-flash-feedback />
 
     <div class="progress-stats">
         <div class="progress-stat">Puntos por acciones<strong>{{ $actionPoints }}</strong></div>
@@ -266,7 +261,7 @@
 
 <!-- BOTÓN SALIR DE LA SALA -->
     <div class="room-exit-wrap" style="margin-top: 18px;">
-        <form method="POST" action="{{ route('room.exit') }}" onsubmit="return confirm('¿Salir de la sala? Tendrás que volver a ingresar con el código.');">
+        <form method="POST" action="{{ route('room.exit') }}" data-confirm-title="¿Salir de la sala?" data-confirm-text="Tendrás que volver a ingresar con el código para continuar." data-confirm-button="Sí, salir" data-confirm-variant="danger">
            @csrf
         <button type="submit" class="exit-room">
             🚪 Salir de la Sala

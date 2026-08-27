@@ -148,7 +148,7 @@
         .btn-logout {
             background: none;
             border: none;
-            color: #6b7280;
+            color: var(--text-secondary);
             font-size: 13.5px;
             font-weight: 600;
             text-decoration: underline;
@@ -160,7 +160,7 @@
         }
 
         .btn-logout:hover {
-            color: #111827;
+            color: var(--text-primary);
         }
 
         /* ADAPTABILIDAD MULTIPLATAFORMA */

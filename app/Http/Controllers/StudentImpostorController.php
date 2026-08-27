@@ -13,13 +13,10 @@ use Illuminate\Validation\Rule;
 
 class StudentImpostorController extends Controller
 {
-    public function lobby(Request $request)
+    public function lobby(Request $request, ImpostorGameService $service)
     {
         $participant = $this->participant($request);
-        $game = ImpostorGame::where('room_id', $participant->room_id)
-            ->where('active_marker', 1)
-            ->latest('id')
-            ->first();
+        $game = $service->activeGame($participant->room);
 
         return $game
             ? redirect()->route('student.impostor.show', $game)
@@ -45,6 +42,11 @@ class StudentImpostorController extends Controller
         }
 
         if ($game->status === 'finished') {
+            if (! $service->hasCompleteRoundData($game)) {
+                return redirect()->route('student.dashboard')
+                    ->with('error', 'La ronda anterior no estaba completa y fue cerrada de forma segura.');
+            }
+
             return redirect()->route('student.impostor.results', $game);
         }
 
@@ -54,6 +56,21 @@ class StudentImpostorController extends Controller
             'hasClue' => $game->clues->contains('participant_id', $participant->id),
             'hasVoted' => $game->votes->contains('voter_id', $participant->id),
         ]);
+    }
+
+    public function state(Request $request, int $game, ImpostorGameService $service)
+    {
+        $participant = $this->participant($request);
+        $game = $service->synchronize($this->gameForParticipant($game, $participant));
+
+        return response()->json([
+            ...$service->state($game),
+            'results_url' => $game->status === 'finished'
+                ? ($service->hasCompleteRoundData($game)
+                    ? route('student.impostor.results', $game)
+                    : route('student.dashboard'))
+                : null,
+        ])->header('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     }
 
     public function clue(Request $request, int $game)
@@ -121,8 +138,13 @@ class StudentImpostorController extends Controller
             return redirect()->route('student.impostor.show', $game)->with('error', 'El profesor todavía no ha finalizado la ronda.');
         }
 
+        if (! $service->hasCompleteRoundData($game)) {
+            return redirect()->route('student.dashboard')
+                ->with('error', 'Esta ronda no contiene información suficiente para mostrar resultados.');
+        }
+
         try {
-            $result = $service->finish($game);
+            $result = $service->finish($game, true);
         } catch (DomainException $exception) {
             return redirect()->route('student.impostor.show', $game)->with('error', $exception->getMessage());
         }

@@ -42,10 +42,32 @@ class TeacherImpostorController extends Controller
         $game->load(['room.participants', 'clues.participant', 'votes', 'impostors']);
 
         if ($game->status === 'finished') {
+            if (! $service->hasCompleteRoundData($game)) {
+                return redirect()->route('teacher.sessions.show', $game->room)
+                    ->with('error', 'La ronda anterior estaba incompleta y fue cerrada de forma segura. Puedes preparar una nueva.');
+            }
+
             return redirect()->route('teacher.impostor.results', $game);
         }
 
         return view('teacher.impostor.show', compact('game'));
+    }
+
+    public function state(int $game, ImpostorGameService $service)
+    {
+        $game = $service->synchronize($this->ownedGame($game));
+        $game->loadCount(['clues', 'votes']);
+
+        return response()->json([
+            ...$service->state($game),
+            'clues_count' => $game->clues_count,
+            'votes_count' => $game->votes_count,
+            'results_url' => $game->status === 'finished'
+                ? ($service->hasCompleteRoundData($game)
+                    ? route('teacher.impostor.results', $game)
+                    : route('teacher.sessions.show', $game->room))
+                : null,
+        ])->header('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     }
 
     public function voting(int $game)
@@ -93,8 +115,13 @@ class TeacherImpostorController extends Controller
                 ->with('error', 'Finaliza la ronda desde el panel docente antes de ver los resultados.');
         }
 
+        if (! $service->hasCompleteRoundData($game)) {
+            return redirect()->route('teacher.sessions.show', $game->room)
+                ->with('error', 'Esta ronda no contiene información suficiente para mostrar resultados.');
+        }
+
         try {
-            $result = $service->finish($game);
+            $result = $service->finish($game, true);
         } catch (DomainException $exception) {
             return redirect()->route('teacher.impostor.show', $game)->with('error', $exception->getMessage());
         }

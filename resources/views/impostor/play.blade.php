@@ -7,11 +7,14 @@
     </style>
 </head>
 <body><main class="page">
-    <nav class="top"><strong>🎭 Juego del Impostor</strong><a class="refresh" href="{{ route('student.impostor.show',$game) }}">Actualizar</a></nav>
+    <nav class="top"><strong>🎭 Juego del Impostor</strong><button type="button" id="studentManualRefresh" class="refresh" data-sync-action>Actualizar</button></nav>
     @include('student.partials.identity-bar', ['participant' => $participant])
-    @if(session('success'))<div class="alert success">{{ session('success') }}</div>@endif @if(session('error'))<div class="alert error">{{ session('error') }}</div>@endif
+    <div id="studentConnectionStatus" class="sync-status sync-status--checking" role="status" aria-live="polite" aria-atomic="true" style="margin-bottom:12px">
+        <span data-sync-label>Verificando conexión…</span>
+    </div>
+    <x-flash-feedback />
     @if($errors->any())<div class="alert error">No fue posible registrar la respuesta. Actualiza la pantalla e inténtalo nuevamente.</div>@endif
-    <section id="gameTimer" class="card timer {{ $game->status === 'voting' ? 'warning' : ($game->status === 'closed' ? 'closed' : '') }}" data-status="{{ $game->status }}" data-voting-at="{{ $game->voting_at?->toIso8601String() }}" data-closes-at="{{ $game->closes_at?->toIso8601String() }}" data-results-at="{{ $game->results_at?->toIso8601String() }}">
+    <section id="gameTimer" class="card timer {{ $game->status === 'voting' ? 'warning' : ($game->status === 'closed' ? 'closed' : '') }}" data-status="{{ $game->status }}" data-state-url="{{ route('student.impostor.state', $game) }}" data-voting-at="{{ $game->voting_at?->toIso8601String() }}" data-closes-at="{{ $game->closes_at?->toIso8601String() }}" data-results-at="{{ $game->results_at?->toIso8601String() }}">
         <span id="timerLabel">{{ $game->status === 'closed' ? 'Partida finalizada' : 'Tiempo restante' }}</span>
         <strong id="timerValue">--:--</strong>
         <span id="timerHelp">{{ $game->status === 'voting' ? '¡Vota ahora! Solo queda el último minuto.' : ($game->status === 'closed' ? 'Los resultados aparecerán en 30 segundos.' : 'En el minuto 4 comenzará la votación obligatoria.') }}</span>
@@ -22,45 +25,94 @@
     </section>
     @if($game->status === 'voting' && !$hasVoted)<div class="alert vote-alert">⚠️ Llegó el minuto 4. Debes votar antes de que termine el tiempo.</div>@endif
     <section class="card"><span class="phase">{{ $game->status === 'playing' ? 'Fase de pistas' : ($game->status === 'voting' ? 'Fase de votación obligatoria' : 'Votación cerrada') }}</span>
-        @if($game->status === 'playing')<h2 style="margin-top:13px">Escribe una pista</h2>@if($hasClue)<p class="alert success">Tu pista ya fue enviada. Espera a que el profesor inicie la votación.</p>@else<form method="POST" action="{{ route('student.impostor.clue',$game) }}" onsubmit="this.querySelector('button').disabled=true">@csrf<input class="input" name="clue" maxlength="120" autocomplete="off" required placeholder="Una palabra o frase breve"><button class="btn">Enviar pista</button></form>@endif
-        @elseif($game->status === 'voting')<h2 style="margin-top:13px">¿Quién es el impostor?</h2>@if($hasVoted)<p class="alert success">Tu voto quedó registrado. Espera los resultados.</p>@else @foreach($game->room->participants as $suspect) @if($suspect->id !== $participant->id)<form method="POST" action="{{ route('student.impostor.vote',$game) }}" onsubmit="this.querySelector('button').disabled=true">@csrf<input type="hidden" name="suspect_id" value="{{ $suspect->id }}"><button type="submit" class="btn vote">Votar por {{ $suspect->name }}</button></form>@endif @endforeach @endif
+        @if($game->status === 'playing')<h2 style="margin-top:13px">Escribe una pista</h2>@if($hasClue)<p class="alert success">Tu pista ya fue enviada. Espera a que el profesor inicie la votación.</p>@else<form method="POST" action="{{ route('student.impostor.clue',$game) }}" onsubmit="this.querySelector('button').disabled=true">@csrf<input class="input" name="clue" maxlength="120" autocomplete="off" required placeholder="Una palabra o frase breve"><button class="btn" data-sync-action>Enviar pista</button></form>@endif
+        @elseif($game->status === 'voting')<h2 style="margin-top:13px">¿Quién es el impostor?</h2>@if($hasVoted)<p class="alert success">Tu voto quedó registrado. Espera los resultados.</p>@else @foreach($game->room->participants as $suspect) @if($suspect->id !== $participant->id)<form method="POST" action="{{ route('student.impostor.vote',$game) }}" onsubmit="this.querySelector('button').disabled=true">@csrf<input type="hidden" name="suspect_id" value="{{ $suspect->id }}"><button type="submit" class="btn vote" data-sync-action>Votar por {{ $suspect->name }}</button></form>@endif @endforeach @endif
         @else<h2 style="margin-top:13px">La votación terminó</h2><p>Espera: los resultados aparecerán automáticamente.</p>@endif
     </section>
     <section class="card"><h2>Pistas compartidas</h2><ul class="clues">@forelse($game->clues as $clue)<li><strong>{{ $clue->participant?->name }}:</strong> {{ $clue->clue }}</li>@empty<li class="muted">Todavía no hay pistas.</li>@endforelse</ul></section>
     <a class="back" href="{{ route('student.dashboard') }}">← Volver al panel</a>
 </main>
 <script>
+function initializeStudentGameSync() {
 const timer = document.getElementById('gameTimer');
 const value = document.getElementById('timerValue');
 const label = document.getElementById('timerLabel');
 const help = document.getElementById('timerHelp');
-const votingAt = Date.parse(timer.dataset.votingAt || '');
-const closesAt = Date.parse(timer.dataset.closesAt || '');
-const resultsAt = Date.parse(timer.dataset.resultsAt || '');
+let votingAt = Date.parse(timer.dataset.votingAt || '');
+let closesAt = Date.parse(timer.dataset.closesAt || '');
+let resultsAt = Date.parse(timer.dataset.resultsAt || '');
 let currentStatus = timer.dataset.status;
+let serverOffset = 0;
+let syncing = false;
+let transitioning = false;
+const connection = window.ITConectaGameSync.createGameSyncStatus(
+    document.getElementById('studentConnectionStatus'),
+    { actionRoot: document.querySelector('main'), onRetry: synchronize }
+);
+document.getElementById('studentManualRefresh')?.addEventListener('click', () => location.reload());
 
 function format(seconds) {
     const safe = Math.max(0, seconds);
     return `${String(Math.floor(safe / 60)).padStart(2,'0')}:${String(safe % 60).padStart(2,'0')}`;
 }
 function tick() {
-    const now = Date.now();
+    const now = Date.now() + serverOffset;
     if (currentStatus === 'closed' || now >= closesAt) {
         timer.className = 'card timer closed';
         label.textContent = 'Partida finalizada';
         value.textContent = format(Math.ceil((resultsAt - now) / 1000));
         help.textContent = 'Los resultados aparecerán cuando llegue a 00:00.';
-        if (now >= resultsAt) location.reload();
         return;
     }
     value.textContent = format(Math.ceil((closesAt - now) / 1000));
     if (now >= votingAt) {
         timer.className = 'card timer warning';
         help.textContent = '¡Vota ahora! Solo queda el último minuto.';
-        if (currentStatus === 'playing') location.reload();
+    }
+}
+async function synchronize() {
+    if (syncing || transitioning) return;
+    syncing = true;
+    try {
+        const response = await window.ITConectaGameSync.fetchWithTimeout(timer.dataset.stateUrl, {
+            headers: { Accept: 'application/json' },
+            cache: 'no-store',
+        });
+        const data = await response.json();
+        connection.succeeded();
+        serverOffset = Date.parse(data.server_now) - Date.now();
+        votingAt = Date.parse(data.voting_at || '');
+        closesAt = Date.parse(data.closes_at || '');
+        resultsAt = Date.parse(data.results_at || '');
+
+        if (data.results_url) {
+            transitioning = true;
+            location.replace(data.results_url);
+            return;
+        }
+
+        if (data.status !== currentStatus) {
+            transitioning = true;
+            location.reload();
+            return;
+        }
+
+        tick();
+    } catch (error) {
+        connection.failed();
+    } finally {
+        syncing = false;
     }
 }
 tick();
-setInterval(tick, 1000);
+setInterval(synchronize, 1000);
+setInterval(tick, 250);
+synchronize();
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) synchronize();
+});
+}
+if (window.ITConectaGameSync) initializeStudentGameSync();
+else window.addEventListener('it-conecta:frontend-ready', initializeStudentGameSync, { once: true });
 </script>
 </body></html>

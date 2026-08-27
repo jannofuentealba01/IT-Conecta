@@ -7,10 +7,20 @@
     </style>
 </head>
 <body><main class="page">
+    @if($teacherView)
+        <x-breadcrumbs :items="[
+            ['label' => 'Área docente', 'url' => route('teacher.dashboard')],
+            ['label' => 'Cursos', 'url' => route('teacher.courses.index')],
+            ['label' => $game->room->course?->name ?? 'Curso', 'url' => route('teacher.courses.show', $game->room->course_id)],
+            ['label' => $game->room->name, 'url' => route('teacher.sessions.show', $game->room)],
+            ['label' => 'Juego del Impostor'],
+            ['label' => 'Resultados'],
+        ]" />
+    @endif
     @unless($teacherView)@include('student.partials.identity-bar', ['participant' => $participant])@endunless
     @php($displayImpostors = $game->impostors->isNotEmpty() ? $game->impostors : collect([$game->impostor])->filter())
     <section class="hero"><div class="icon">{{ $allImpostorsCaught ? '🎉' : '😈' }}</div><h1>{{ $allImpostorsCaught ? '¡Todos los impostores fueron descubiertos!' : 'Uno o más impostores escaparon' }}</h1><p>Los impostores eran <strong>{{ $displayImpostors->pluck('name')->join(', ') }}</strong>.</p><div class="outcome">Se descubrieron {{ $caughtImpostorIds->count() }} de {{ $displayImpostors->count() }} impostores. Los votos dirigidos a cualquier impostor recibieron su premio de aprendizaje.</div></section>
-    <section class="card"><h2>Resultado de la votación</h2><div class="votes">@foreach($voteCounts->sortDesc() as $suspectId => $count)<div class="vote-row"><span>{{ $game->room->participants->firstWhere('id',(int)$suspectId)?->name ?? 'Estudiante' }}</span><strong>{{ $count }} {{ $count === 1 ? 'voto' : 'votos' }}</strong></div>@endforeach</div></section>
+    <section class="card"><h2>Resultado de la votación</h2><div class="votes">@forelse($voteCounts->sortDesc() as $suspectId => $count)<div class="vote-row"><span>{{ $game->room->participants->firstWhere('id',(int)$suspectId)?->name ?? 'Estudiante' }}</span><strong>{{ $count }} {{ $count === 1 ? 'voto' : 'votos' }}</strong></div>@empty<p style="color:var(--text-secondary);margin:0">No se registraron votos en esta ronda.</p>@endforelse</div></section>
     <section class="card"><h2>Puntos de esta ronda</h2><ul class="points"><li>5 puntos por participar enviando una pista.</li><li>10 puntos adicionales por votar correctamente.</li><li>20 puntos para el impostor si no es descubierto.</li></ul><p style="color:var(--text-secondary);font-size:13px">Estos son puntos de aprendizaje: no descuentan kilogramos de la huella de carbono.</p></section>
     @if($teacherView)
         <form method="POST" action="{{ route('teacher.impostor.start',$game->room) }}">@csrf<button class="btn">Iniciar otra ronda</button></form><a class="btn secondary" href="{{ route('teacher.sessions.show',$game->room) }}">Volver a la sala</a>

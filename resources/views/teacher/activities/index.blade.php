@@ -3,6 +3,10 @@
 @include('teacher.partials.styles')
 @php($impactLabels = ['low'=>'Bajo · 10 pts','medium'=>'Medio · 20 pts','high'=>'Alto · 35 pts','very_high'=>'Muy alto · 50 pts'])
 <div class="teacher-shell">
+    <x-breadcrumbs :items="[
+        ['label' => 'Área docente', 'url' => route('teacher.dashboard')],
+        ['label' => 'Actividades'],
+    ]" />
     <div class="teacher-header">
         <div><p class="teacher-eyebrow">Catálogo reutilizable</p><h1 class="teacher-title">Actividades ambientales</h1><p class="teacher-subtitle">Estas actividades pueden reutilizarse en distintas sesiones. La reducción real de CO₂ se añadirá cuando exista la metodología.</p></div>
         <a href="{{ route('activities.create') }}" class="teacher-btn teacher-btn-primary">＋ Nueva actividad</a>
@@ -17,7 +21,7 @@
                     <span style="color:#9ca3af; font-size:12px; margin-left:8px;">{{ $activity->user_id ? 'Creada por ti' : 'Actividad global' }}</span>
                 </div>
                 @if($activity->user_id === auth()->id() || (auth()->user()->rol === 'admin' && !$activity->user_id))
-                    <div style="display:flex; gap:8px; flex-wrap:wrap;"><a href="{{ route('activities.edit', $activity) }}" class="teacher-btn teacher-btn-secondary">Editar</a>@if($activity->is_active)<form method="POST" action="{{ route('activities.destroy', $activity) }}" onsubmit="return confirm('¿Desactivar esta actividad?');">@csrf @method('DELETE')<button class="teacher-btn teacher-btn-danger">Desactivar</button></form>@endif</div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;"><a href="{{ route('activities.edit', $activity) }}" class="teacher-btn teacher-btn-secondary">Editar</a>@if($activity->is_active)<form method="POST" action="{{ route('activities.destroy', $activity) }}" data-confirm-title="¿Desactivar esta actividad?" data-confirm-text="Ya no estará disponible para nuevas selecciones. Los registros anteriores se conservarán." data-confirm-button="Sí, desactivar" data-confirm-variant="danger">@csrf @method('DELETE')<button class="teacher-btn teacher-btn-danger-subtle">Desactivar</button></form>@endif</div>
                 @endif
             </div>
         @empty

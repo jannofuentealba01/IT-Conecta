@@ -20,6 +20,7 @@
 /storage/*.key
 /storage/pail
 /vendor
+/tools/mailpit/
 /output/pdf/*.pdf
 Homestead.json
 Homestead.yaml

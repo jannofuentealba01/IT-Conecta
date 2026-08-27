@@ -102,52 +102,45 @@
         /* Botón de Logout */
         .logout-btn {
             text-decoration: none;
-            background: var(--brand-blue);
-            color: var(--surface);
+            background: var(--surface);
+            color: var(--text-secondary);
             padding: 10px 18px;
             border-radius: 10px;
             font-size: 14px;
             font-weight: 600;
             transition: all 0.2s ease;
-            border: none;
+            border: 1px solid var(--border);
             cursor: pointer;
             min-height: 48px;
         }
 
-        .logout-btn:hover {
-            background: var(--brand-blue-dark);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px var(--focus-ring);
-        }
-
-        /* ALERTAS DE ÉXITO O ERROR DEL SISTEMA */
-        .alert {
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            font-size: 14.5px;
-            font-weight: 600;
-            display: flex;
+        .profile-btn {
+            display: inline-flex;
             align-items: center;
-            gap: 10px;
-            animation: slideIn 0.3s ease-out;
+            justify-content: center;
+            min-height: 48px;
+            padding: 10px 16px;
+            border: 1px solid var(--brand-blue-light);
+            border-radius: 10px;
+            background: var(--surface);
+            color: var(--brand-blue-dark);
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s ease;
         }
 
-        .alert-success {
-            background-color: var(--positive-soft);
-            border: 1px solid var(--brand-green);
-            color: var(--brand-green-dark);
+        .profile-btn:hover,
+        .profile-btn[aria-current='page'] {
+            background: var(--info-soft);
+            border-color: var(--brand-blue);
         }
 
-        .alert-danger {
-            background-color: var(--danger-soft);
-            border: 1px solid var(--danger);
-            color: var(--danger-dark);
-        }
-
-        @keyframes slideIn {
-            from { transform: translateY(-10px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+        .logout-btn:hover {
+            background: var(--surface-muted);
+            color: var(--text-primary);
+            border-color: var(--brand-blue-light);
+            transform: translateY(-1px);
         }
 
         /* CONTENEDOR DINÁMICO DE LAS VISTAS */
@@ -186,7 +179,7 @@
                 width: 100%;
                 gap: 10px;
             }
-            .user-info, .logout-btn {
+            .user-info, .profile-btn, .logout-btn, .user-badge form {
                 width: 100%;
                 justify-content: center;
             }
@@ -207,22 +200,25 @@
         </a>
 
         <!-- Datos de sesión del participante -->
-        @if (session()->has('participant_id'))
-        <div class="user-badge">
-            @include('student.partials.identity-bar')
-        </div>
-        @elseif (auth()->check())
+        @if (auth()->check())
         <div class="user-badge">
             <div class="user-info">
                 <span>👤 {{ auth()->user()->name }}</span>
-                <span class="points-highlight">Área docente</span>
+                <span class="points-highlight">{{ auth()->user()->rol === 'admin' ? 'Administración' : 'Área docente' }}</span>
             </div>
+            <a href="{{ route('profile.edit') }}" class="profile-btn" @if(request()->routeIs('profile.*')) aria-current="page" @endif>
+                Mi perfil
+            </a>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit" class="logout-btn" style="border:0; cursor:pointer;">
+                <button type="submit" class="logout-btn">
                     Cerrar sesión
                 </button>
             </form>
+        </div>
+        @elseif (session()->has('participant_id'))
+        <div class="user-badge">
+            @include('student.partials.identity-bar')
         </div>
         @endif
     </header>
@@ -230,18 +226,8 @@
 
 
 
-    <!-- ALERTAS GLOBALES DE SESIÓN (ÉXITO / ERROR) -->
-    @if (session('success'))
-        <div class="alert alert-success">
-            ✅ {{ session('success') }}
-        </div>
-    @endif
-
-    @if (session('error'))
-        <div class="alert alert-danger">
-            ❌ {{ session('error') }}
-        </div>
-    @endif
+    <!-- Feedback global centralizado: errores relevantes y éxitos importantes. -->
+    <x-flash-feedback />
 
     <!-- CONTENIDO DINÁMICO DE LA VISTA -->
     <main class="main-content">

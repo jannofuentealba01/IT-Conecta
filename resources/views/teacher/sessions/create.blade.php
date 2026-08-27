@@ -2,6 +2,12 @@
 @section('content')
 @include('teacher.partials.styles')
 <div class="teacher-shell" style="max-width:700px;">
+    <x-breadcrumbs :items="[
+        ['label' => 'Área docente', 'url' => route('teacher.dashboard')],
+        ['label' => 'Cursos', 'url' => route('teacher.courses.index')],
+        ['label' => $course->name, 'url' => route('teacher.courses.show', $course)],
+        ['label' => 'Nueva sesión'],
+    ]" />
     <div class="teacher-header"><div><p class="teacher-eyebrow">{{ $course->name }}</p><h1 class="teacher-title">Preparar nueva sesión</h1><p class="teacher-subtitle">El código se generará automáticamente.</p></div></div>
     <form class="teacher-card" method="POST" action="{{ route('teacher.sessions.store', $course) }}">
         @csrf

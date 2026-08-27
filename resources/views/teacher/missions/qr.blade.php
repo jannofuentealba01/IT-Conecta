@@ -3,6 +3,14 @@
 @include('teacher.partials.styles')
 <style>@media print { .navbar,.footer,.print-hide { display:none!important; } body{background:#fff!important}.teacher-card{box-shadow:none!important;border:0!important} }</style>
 <div class="teacher-shell" style="max-width:650px; text-align:center;">
+    <x-breadcrumbs :items="[
+        ['label' => 'Área docente', 'url' => route('teacher.dashboard')],
+        ['label' => 'Cursos', 'url' => route('teacher.courses.index')],
+        ['label' => $room->course?->name ?? 'Curso', 'url' => route('teacher.courses.show', $room->course_id)],
+        ['label' => $room->name, 'url' => route('teacher.sessions.show', $room)],
+        ['label' => 'Misiones QR', 'url' => route('teacher.missions.index', $room)],
+        ['label' => $mission->activity->name],
+    ]" />
     <div class="teacher-card">
         <p class="teacher-eyebrow">Misión ambiental · {{ $room->course?->name }}</p>
         <h1 class="teacher-title">{{ $mission->activity->name }}</h1>

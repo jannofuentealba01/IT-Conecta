@@ -31,6 +31,13 @@
     .report-stat.footprint-high strong { color:var(--danger-dark); }
     .activity-list { margin:6px 0 0; padding-left:17px; color:var(--text-secondary); font-size:12px; }
     .report-note { padding:14px 16px; margin-bottom:18px; border-radius:13px; color:var(--text-secondary); background:var(--surface-muted); border:1px solid var(--border); font-size:13px; line-height:1.5; }
+    .game-result { display:flex; justify-content:space-between; gap:16px; align-items:center; margin-bottom:14px; padding:14px 16px; border:1px solid var(--brand-purple); border-radius:13px; background:var(--game-soft); }
+    .game-result strong { display:block; color:var(--brand-purple-dark); }
+    .game-result span { color:var(--text-secondary); font-size:13px; }
+    .role-badge { display:inline-flex; padding:4px 8px; border-radius:999px; font-size:11px; font-weight:850; }
+    .role-impostor { color:var(--brand-purple-dark); background:var(--game-soft); }
+    .role-crew { color:var(--brand-blue-dark); background:var(--info-soft); }
+    .game-mobile-ranking { display:none; }
     .mobile-results { display:none; }
     @media (max-width:760px) {
         .report-summary { grid-template-columns:repeat(2,minmax(0,1fr)); }
@@ -47,6 +54,10 @@
         .student-metric strong.footprint-number-low { color:var(--brand-green-dark); }
         .student-metric strong.footprint-number-medium { color:var(--text-primary); }
         .student-metric strong.footprint-number-high { color:var(--danger-dark); }
+        .game-result { align-items:flex-start; flex-direction:column; }
+        .game-mobile-ranking { display:grid; gap:10px; }
+        .game-ranking-card { display:grid; grid-template-columns:auto 1fr auto; gap:10px; align-items:center; padding:12px; border:1px solid var(--border); border-radius:13px; background:var(--surface); }
+        .game-ranking-position { color:var(--brand-purple-dark); font-weight:900; }
     }
     @media (max-width:420px) { .report-summary { grid-template-columns:1fr; } }
     @media print {
@@ -63,9 +74,17 @@
 @php
     $statusLabels = ['draft'=>'Preparada','open'=>'Abierta','closed'=>'Cerrada','archived'=>'Archivada'];
     $levelLabels = ['low'=>'Baja','medium'=>'Media','high'=>'Alta'];
+    $impostorExperiences = collect($exportResults['experiences'])->where('type', 'impostor_game')->values();
 @endphp
 
 <div class="teacher-shell">
+    <x-breadcrumbs :items="[
+        ['label' => 'Área docente', 'url' => route('teacher.dashboard')],
+        ['label' => 'Cursos', 'url' => route('teacher.courses.index')],
+        ['label' => $room->course?->name ?? 'Curso', 'url' => route('teacher.courses.show', $room->course_id)],
+        ['label' => $room->name, 'url' => route('teacher.sessions.show', $room)],
+        ['label' => 'Resultados de la sala'],
+    ]" />
     <div class="teacher-header">
         <div>
             <p class="teacher-eyebrow">Reporte de resultados</p>
@@ -74,6 +93,7 @@
         </div>
         <div class="report-actions">
             <span class="teacher-badge status-{{ $room->status }}">{{ $statusLabels[$room->status] ?? ucfirst($room->status) }}</span>
+            <a href="{{ route('teacher.sessions.report.pdf', $room) }}" class="teacher-btn teacher-btn-primary">Descargar PDF</a>
             <button type="button" class="teacher-btn teacher-btn-secondary" onclick="window.print()">Imprimir reporte</button>
         </div>
     </div>
@@ -95,7 +115,7 @@
 
     <section class="teacher-card">
         <div class="teacher-header" style="margin-bottom:14px;">
-            <div><h2 style="margin:0 0 5px; font-size:19px;">Resultados por estudiante</h2><p class="teacher-meta">Información acumulada exclusivamente en esta sala.</p></div>
+            <div><h2 class="teacher-section-title teacher-section-title--brand">Resultados por estudiante</h2><p class="teacher-meta">Información acumulada exclusivamente en esta sala.</p></div>
         </div>
 
         <div class="report-table-wrap">
@@ -116,8 +136,9 @@
                         <td><span class="score">{{ $participant->total_points }} pts</span><div class="student-meta">{{ $participant->action_points }} acción · {{ $participant->learning_points }} aprendizaje</div></td>
                         <td>
                             <strong>{{ $participant->activity_completions_count }}</strong>
-                            @if($participant->activityCompletions->isNotEmpty())
-                                <ul class="activity-list">@foreach($participant->activityCompletions as $completion)<li>{{ $completion->activity?->name ?? 'Actividad eliminada' }} · {{ $completion->completed_at->format('d/m/Y') }}</li>@endforeach</ul>
+                            @php($completedActivities = $participant->activityCompletions->concat($participant->ecoHuntCompletions)->sortBy('completed_at'))
+                            @if($completedActivities->isNotEmpty())
+                                <ul class="activity-list">@foreach($completedActivities as $completion)<li>{{ $completion->activity?->name ?? 'Actividad eliminada' }} · {{ $completion->completed_at->format('d/m/Y') }}</li>@endforeach</ul>
                             @endif
                         </td>
                         <td>{{ $participant->projected_reduction !== null ? number_format($participant->projected_reduction, 2, ',', '.').' kg CO₂e/año' : 'Pendiente' }}</td>
@@ -139,8 +160,9 @@
                         <div class="student-metric">Puntos de aprendizaje<strong>{{ $participant->learning_points }}</strong></div>
                         <div class="student-metric">Reducción proyectada<strong>{{ $participant->projected_reduction !== null ? number_format($participant->projected_reduction, 2, ',', '.').' kg/año' : 'Pendiente' }}</strong></div>
                     </div>
-                    @if($participant->activityCompletions->isNotEmpty())
-                        <ul class="activity-list">@foreach($participant->activityCompletions as $completion)<li>{{ $completion->activity?->name ?? 'Actividad eliminada' }} · {{ $completion->completed_at->format('d/m/Y') }}</li>@endforeach</ul>
+                    @php($completedActivities = $participant->activityCompletions->concat($participant->ecoHuntCompletions)->sortBy('completed_at'))
+                    @if($completedActivities->isNotEmpty())
+                        <ul class="activity-list">@foreach($completedActivities as $completion)<li>{{ $completion->activity?->name ?? 'Actividad eliminada' }} · {{ $completion->completed_at->format('d/m/Y') }}</li>@endforeach</ul>
                     @endif
                 </article>
             @empty
@@ -151,9 +173,64 @@
 
     @foreach($ecoHunts as $hunt)
     <section class="teacher-card" style="margin-top:18px">
-        <div class="teacher-header" style="margin-bottom:12px"><div><h2 style="margin:0 0 5px;font-size:19px">EcoBúsqueda: {{ $hunt->name }}</h2><p class="teacher-meta">{{ $hunt->started_at?->format('d/m/Y H:i') ?? 'No iniciada' }} · {{ $hunt->effective_seconds !== null ? gmdate('i:s',(int)$hunt->effective_seconds) : '--:--' }} de duración · {{ ['automatic'=>'Finalización automática','teacher'=>'Finalización docente'][$hunt->finished_by] ?? ['draft'=>'En configuración','ready'=>'Preparada','active'=>'Activa','finished'=>'Finalizada'][$hunt->status] ?? ucfirst($hunt->status) }}</p></div><span class="teacher-badge status-{{ $hunt->status==='active'?'open':'draft' }}">{{ $hunt->completions->count() }} QR registrados</span></div>
+        <div class="teacher-header" style="margin-bottom:12px"><div><h2 class="teacher-section-title teacher-section-title--positive">EcoBúsqueda: {{ $hunt->name }}</h2><p class="teacher-meta">{{ $hunt->started_at?->format('d/m/Y H:i') ?? 'No iniciada' }} · {{ $hunt->effective_seconds !== null ? gmdate('i:s',(int)$hunt->effective_seconds) : '--:--' }} de duración · {{ ['automatic'=>'Finalización automática','teacher'=>'Finalización docente'][$hunt->finished_by] ?? ['draft'=>'En configuración','ready'=>'Preparada','active'=>'Activa','finished'=>'Finalizada'][$hunt->status] ?? ucfirst($hunt->status) }}</p></div><span class="teacher-badge status-{{ $hunt->status==='active'?'open':'draft' }}">{{ $hunt->completions->count() }} QR registrados</span></div>
         @if($hunt->ranking->isNotEmpty())<div class="report-table-wrap"><table class="report-table" style="min-width:560px"><thead><tr><th>Posición</th><th>Estudiante</th><th>Puntos</th><th>QR encontrados</th></tr></thead><tbody>@foreach($hunt->ranking as $index=>$entry)<tr><td>#{{ $index+1 }}</td><td>{{ $entry->name }}</td><td class="score">{{ $entry->points }}</td><td>{{ $entry->completed_count }}/{{ $hunt->activities->count() }}</td></tr>@endforeach</tbody></table></div>@else<div class="empty-state">Esta EcoBúsqueda todavía no registra actividades completadas.</div>@endif
         @if($hunt->activity_stats->isNotEmpty())<div class="report-note" style="margin:14px 0 0"><strong>Actividad más encontrada:</strong> {{ $hunt->activity_stats->first()->name }} ({{ $hunt->activity_stats->first()->count }}) · <strong>Menos encontrada entre las registradas:</strong> {{ $hunt->activity_stats->last()->name }} ({{ $hunt->activity_stats->last()->count }})</div>@endif
+    </section>
+    @endforeach
+
+    @foreach($impostorExperiences as $gameNumber => $game)
+    <section class="teacher-card" style="margin-top:18px">
+        <div class="teacher-header" style="margin-bottom:12px">
+            <div>
+                <h2 class="teacher-section-title teacher-section-title--game">Juego del Impostor {{ $impostorExperiences->count() > 1 ? '· Partida '.($gameNumber + 1) : '' }}</h2>
+                <p class="teacher-meta">
+                    {{ $game['started_at'] ? \Illuminate\Support\Carbon::parse($game['started_at'])->format('d/m/Y H:i') : 'No iniciada' }}
+                    · {{ $game['duration_seconds'] !== null ? gmdate('i:s', $game['duration_seconds']) : '--:--' }} de duración
+                    · {{ $game['status_label'] }}
+                </p>
+            </div>
+            <span class="teacher-badge" style="color:var(--brand-purple-dark);background:var(--game-soft)">{{ $game['metrics']['votes_submitted'] }} votos</span>
+        </div>
+
+        @if($game['result'])
+            <div class="game-result">
+                <div><span>Equipo ganador</span><strong>{{ $game['result']['winner_label'] }}</strong></div>
+                <span>{{ $game['result']['summary'] }}</span>
+            </div>
+        @endif
+
+        @if(count($game['ranking']))
+            <div class="report-table-wrap">
+                <table class="report-table" style="min-width:680px">
+                    <thead><tr><th>Posición</th><th>Estudiante</th><th>Rol</th><th>Pista</th><th>Votó por</th><th>Votos recibidos</th><th>Puntos</th></tr></thead>
+                    <tbody>
+                    @foreach($game['ranking'] as $entry)
+                        <tr>
+                            <td>#{{ $entry['position'] }}</td>
+                            <td class="student-title">{{ $entry['participant'] }}</td>
+                            <td><span class="role-badge role-{{ $entry['role'] }}">{{ $entry['role'] === 'impostor' ? 'Impostor' : 'Tripulación' }}</span></td>
+                            <td>{{ $entry['clue_submitted'] ? 'Entregada' : 'Sin pista' }}</td>
+                            <td>{{ $entry['voted_for'] ?? 'Sin voto' }}</td>
+                            <td>{{ $entry['votes_received'] }}</td>
+                            <td class="score">{{ $entry['points'] }}</td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+            <div class="game-mobile-ranking">
+                @foreach($game['ranking'] as $entry)
+                    <article class="game-ranking-card">
+                        <span class="game-ranking-position">#{{ $entry['position'] }}</span>
+                        <div><strong class="student-title">{{ $entry['participant'] }}</strong><div class="student-meta">{{ $entry['role'] === 'impostor' ? 'Impostor' : 'Tripulación' }} · {{ $entry['votes_received'] }} votos recibidos</div></div>
+                        <span class="score">{{ $entry['points'] }} pts</span>
+                    </article>
+                @endforeach
+            </div>
+        @else
+            <div class="empty-state">Esta partida todavía no registra participantes.</div>
+        @endif
     </section>
     @endforeach
 

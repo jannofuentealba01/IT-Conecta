@@ -36,6 +36,9 @@
 </style>
 
 <div class="carbon-shell">
+    @isset($breadcrumbItems)
+        <x-breadcrumbs :items="$breadcrumbItems" />
+    @endisset
     <div class="carbon-card">
         <h1 class="carbon-title">📊 Calculadora de Huella de Carbono</h1>
         <p class="carbon-subtitle">Obtendrás una estimación educativa de tus emisiones anuales. El resultado quedará guardado para medir tu progreso.</p>

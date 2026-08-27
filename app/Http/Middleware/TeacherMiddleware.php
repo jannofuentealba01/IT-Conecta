@@ -6,24 +6,22 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class AdminMiddleware
+class TeacherMiddleware
 {
     /**
-     * Handle an incoming request.
-     *
-     * @param  Closure(Request): (Response)  $next
+     * @param  Closure(Request): Response  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
-
         if (! auth()->check()) {
-            return redirect('/login');
-        }
-        if (! in_array(auth()->user()->rol, ['admin', 'profesor'], true)) {
-            return redirect('/')->with('error', 'No autorizado');
+            return redirect()->route('login');
         }
 
-        if (auth()->user()->rol === 'profesor' && auth()->user()->approval_status !== 'approved') {
+        if (auth()->user()->rol !== 'profesor') {
+            abort(403, 'Esta sección es exclusiva de profesores.');
+        }
+
+        if (auth()->user()->approval_status !== 'approved') {
             auth()->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();

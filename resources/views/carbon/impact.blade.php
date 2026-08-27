@@ -20,6 +20,9 @@
 </style>
 
 <div class="impact-shell">
+    @isset($breadcrumbItems)
+        <x-breadcrumbs :items="$breadcrumbItems" />
+    @endisset
     <section class="impact-card {{ $impact['classification'] }}">
         <p class="impact-label">🌍 Tu impacto en cifras reales</p>
 

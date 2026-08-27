@@ -1,9 +1,15 @@
 @extends('layouts.app')
 @section('content')
 @include('teacher.partials.styles')
-<style>.module-eco{border-color:var(--brand-green)!important}.module-eco h2{color:var(--brand-green-dark)!important}.module-eco .teacher-btn{background:var(--brand-green)}.module-eco .teacher-btn:hover{background:var(--brand-green-dark)}.module-game{border-color:var(--brand-purple)!important}.module-game h2{color:var(--brand-purple-dark)!important}.module-game .teacher-btn{background:var(--brand-purple)}.module-game .teacher-btn:hover{background:var(--brand-purple-dark)}</style>
+<style>.module-eco{border-color:var(--brand-green)!important}.module-eco h2{color:var(--brand-green-dark)!important}.module-game{border-color:var(--brand-purple)!important}.module-game h2{color:var(--brand-purple-dark)!important}</style>
 @php($statusLabels = ['draft'=>'Preparada','open'=>'Abierta','closed'=>'Cerrada','archived'=>'Archivada'])
 <div class="teacher-shell">
+    <x-breadcrumbs :items="[
+        ['label' => 'Área docente', 'url' => route('teacher.dashboard')],
+        ['label' => 'Cursos', 'url' => route('teacher.courses.index')],
+        ['label' => $room->course?->name ?? 'Curso', 'url' => route('teacher.courses.show', $room->course_id)],
+        ['label' => $room->name],
+    ]" />
     <div class="teacher-header">
         <div><p class="teacher-eyebrow">{{ $room->course?->name }}</p><h1 class="teacher-title">{{ $room->name }}</h1><p class="teacher-subtitle">Creada {{ $room->created_at->format('d/m/Y H:i') }}</p></div>
         <span class="teacher-badge status-{{ $room->status }}">{{ $statusLabels[$room->status] ?? ucfirst($room->status) }}</span>
@@ -23,33 +29,33 @@
             @if($room->status === 'draft')
                 <form method="POST" action="{{ route('teacher.sessions.open', $room) }}">@csrf<button class="teacher-btn teacher-btn-primary">▶ Abrir sesión</button></form>
             @elseif($room->status === 'open')
-                <form method="POST" action="{{ route('teacher.sessions.close', $room) }}" onsubmit="return confirm('¿Cerrar la sesión? Los estudiantes no podrán volver a ingresar.');">@csrf<button class="teacher-btn teacher-btn-danger">■ Cerrar sesión</button></form>
+                <form method="POST" action="{{ route('teacher.sessions.close', $room) }}" data-confirm-title="¿Cerrar la sesión?" data-confirm-text="Los estudiantes no podrán volver a ingresar, pero los registros permanecerán guardados." data-confirm-button="Sí, cerrar sesión" data-confirm-variant="danger">@csrf<button class="teacher-btn teacher-btn-danger-subtle">■ Cerrar sesión</button></form>
             @endif
         </div>
     </div>
 
     <div class="teacher-card" style="margin-bottom:18px; display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap; border-color:var(--brand-blue-light);">
-        <div><h2 style="color:var(--brand-blue-dark); font-size:19px; margin:0 0 5px;">📊 Calcular mi huella</h2><p class="teacher-meta">Realiza el mismo cálculo que los estudiantes y conoce tu impacto anual. Tu resultado es personal y no se incluye en el reporte de la sala.</p></div>
+        <div><h2 class="teacher-section-title teacher-section-title--brand">📊 Calcular mi huella</h2><p class="teacher-meta">Realiza el mismo cálculo que los estudiantes y conoce tu impacto anual. Tu resultado es personal y no se incluye en el reporte de la sala.</p></div>
         <a href="{{ route('teacher.carbon.form', $room) }}" class="teacher-btn teacher-btn-primary">{{ $teacherHasFootprint ? 'Ver mi huella' : 'Calcular huella' }}</a>
     </div>
 
     <div class="teacher-card module-eco" style="margin-bottom:18px; display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap;">
-        <div><h2 style="color:var(--brand-green-dark); font-size:19px; margin:0 0 5px;">🧭 EcoBúsqueda</h2><p class="teacher-meta">Prepara la búsqueda individual de 15 minutos con QR ambientales permanentes.</p></div>
-        <a href="{{ route('teacher.eco-hunts.index', $room) }}" class="teacher-btn teacher-btn-primary">Preparar EcoBúsqueda</a>
+        <div><h2 class="teacher-section-title teacher-section-title--positive">🧭 EcoBúsqueda</h2><p class="teacher-meta">Prepara la búsqueda individual de 15 minutos con QR ambientales permanentes.</p></div>
+        <a href="{{ route('teacher.eco-hunts.index', $room) }}" class="teacher-btn teacher-btn-positive">Preparar EcoBúsqueda</a>
     </div>
 
     <div class="teacher-card module-game" style="margin-bottom:18px; display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap;">
-        <div><h2 style="color:var(--brand-purple-dark); font-size:19px; margin:0 0 5px;">Juego del Impostor</h2><p class="teacher-meta">El profesor inicia y controla la ronda. Los premios se registran como aprendizaje y no reducen la huella.</p></div>
-        <form method="POST" action="{{ route('teacher.impostor.start', $room) }}">@csrf<button class="teacher-btn teacher-btn-primary" {{ $room->status !== 'open' ? 'disabled' : '' }}>Preparar o continuar juego</button></form>
+        <div><h2 class="teacher-section-title teacher-section-title--game">Juego del Impostor</h2><p class="teacher-meta">El profesor inicia y controla la ronda. Los premios se registran como aprendizaje y no reducen la huella.</p></div>
+        <form method="POST" action="{{ route('teacher.impostor.start', $room) }}">@csrf<button class="teacher-btn teacher-btn-game" {{ $room->status !== 'open' ? 'disabled' : '' }}>Preparar o continuar juego</button></form>
     </div>
 
     <div class="teacher-card" style="margin-bottom:18px; display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap;">
-        <div><h2 style="color:var(--brand-blue-dark); font-size:19px; margin:0 0 5px;">Resultados de la sala</h2><p class="teacher-meta">Consulta huellas iniciales, puntos y actividades realizadas. El reporte permanece disponible al cerrar la sala.</p></div>
+        <div><h2 class="teacher-section-title teacher-section-title--brand">Resultados de la sala</h2><p class="teacher-meta">Consulta huellas iniciales, puntos y actividades realizadas. El reporte permanece disponible al cerrar la sala.</p></div>
         <a href="{{ route('teacher.sessions.report', $room) }}" class="teacher-btn teacher-btn-secondary">Ver resultados</a>
     </div>
 
     <div class="teacher-card">
-        <div class="teacher-header" style="margin-bottom:14px;"><div><h2 style="color:var(--brand-blue-dark); font-size:19px; margin:0 0 5px;">Estudiantes conectados</h2><p class="teacher-meta">{{ $room->participants->count() }} participantes registrados</p></div><a href="{{ route('teacher.sessions.show', $room) }}" class="teacher-btn teacher-btn-secondary">↻ Actualizar</a></div>
+        <div class="teacher-header" style="margin-bottom:14px;"><div><h2 class="teacher-section-title teacher-section-title--brand">Estudiantes conectados</h2><p class="teacher-meta">{{ $room->participants->count() }} participantes registrados</p></div><a href="{{ route('teacher.sessions.show', $room) }}" class="teacher-btn teacher-btn-secondary">↻ Actualizar</a></div>
         <div class="teacher-list">
             @forelse($room->participants as $participant)
                 @php($isRecentlyActive = ($participant->last_seen_at ?? $participant->updated_at)->gt(now()->subMinutes(5)))
@@ -62,7 +68,7 @@
 
     <div style="display:flex; justify-content:space-between; gap:10px; margin-top:16px; flex-wrap:wrap;">
         <a href="{{ route('teacher.courses.show', $room->course_id) }}" class="teacher-btn teacher-btn-muted">← Volver al curso</a>
-        @if(in_array($room->status, ['closed','draft'], true))<form method="POST" action="{{ route('teacher.sessions.archive', $room) }}" onsubmit="return confirm('¿Archivar esta sesión?');">@csrf<button class="teacher-btn teacher-btn-danger">Archivar sesión</button></form>@endif
+        @if(in_array($room->status, ['closed','draft'], true))<form method="POST" action="{{ route('teacher.sessions.archive', $room) }}" data-confirm-title="¿Archivar esta sesión?" data-confirm-text="Dejará de aparecer entre las sesiones activas. Sus registros se conservarán." data-confirm-button="Sí, archivar" data-confirm-variant="danger">@csrf<button class="teacher-btn teacher-btn-danger-subtle">Archivar sesión</button></form>@endif
     </div>
 </div>
 @endsection

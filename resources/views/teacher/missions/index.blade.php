@@ -2,6 +2,13 @@
 @section('content')
 @include('teacher.partials.styles')
 <div class="teacher-shell">
+    <x-breadcrumbs :items="[
+        ['label' => 'Área docente', 'url' => route('teacher.dashboard')],
+        ['label' => 'Cursos', 'url' => route('teacher.courses.index')],
+        ['label' => $room->course?->name ?? 'Curso', 'url' => route('teacher.courses.show', $room->course_id)],
+        ['label' => $room->name, 'url' => route('teacher.sessions.show', $room)],
+        ['label' => 'Misiones QR'],
+    ]" />
     <div class="teacher-header"><div><p class="teacher-eyebrow">{{ $room->course?->name }} · {{ $room->name }}</p><h1 class="teacher-title">Misiones QR de la sesión</h1><p class="teacher-subtitle">Selecciona las actividades que los estudiantes encontrarán durante esta sesión.</p></div></div>
     <form method="POST" action="{{ route('teacher.missions.update', $room) }}">
         @csrf @method('PUT')

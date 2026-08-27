@@ -235,6 +235,13 @@
                 @if (session('status'))
                     <div class="success-status">
                         {{ session('status') }}
+                        @if (app()->environment('local') && config('mail.default') === 'smtp')
+                            <div style="margin-top:9px">
+                                <a href="http://127.0.0.1:8025" target="_blank" rel="noopener noreferrer">
+                                    Abrir bandeja de correo local
+                                </a>
+                            </div>
+                        @endif
                     </div>
                 @endif
 

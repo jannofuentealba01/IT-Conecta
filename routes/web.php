@@ -34,9 +34,12 @@ Route::get('/', function () {
 })->name('home');
 
 // Flujo para unirse a salas tipo Kahoot
-Route::post('/join-room', [RoomController::class, 'join'])->middleware('throttle:20,1')->name('room.join');
+// Una clase completa puede compartir una única IP pública (NAT). El margen
+// permite el ingreso de hasta 40 estudiantes con reintentos sin desactivar
+// la protección contra ráfagas abusivas.
+Route::post('/join-room', [RoomController::class, 'join'])->middleware('throttle:120,1')->name('room.join');
 Route::get('/room/{code}', [RoomController::class, 'showJoinForm'])->name('room.form');
-Route::post('/room/{code}/enter', [RoomController::class, 'enter'])->middleware('throttle:30,1')->name('room.enter');
+Route::post('/room/{code}/enter', [RoomController::class, 'enter'])->middleware('throttle:120,1')->name('room.enter');
 
 // Salir de la sala actual (limpiar sesión)
 Route::post('/exit-room', [StudentSessionController::class, 'destroy'])->name('room.exit');
@@ -86,6 +89,7 @@ Route::middleware(['participant'])->prefix('student')->group(function () {
     Route::post('/eco-hunt/qr/{token}', [StudentEcoHuntController::class, 'complete'])->middleware('throttle:20,1')->name('student.eco-hunt.complete');
 
     Route::get('/impostor', [StudentImpostorController::class, 'lobby'])->name('student.impostor.lobby');
+    Route::get('/impostor/{game}/state', [StudentImpostorController::class, 'state'])->name('student.impostor.state');
     Route::get('/impostor/{game}', [StudentImpostorController::class, 'show'])->name('student.impostor.show');
     Route::post('/impostor/{game}/clue', [StudentImpostorController::class, 'clue'])->middleware('throttle:10,1')->name('student.impostor.clue');
     Route::post('/impostor/{game}/vote', [StudentImpostorController::class, 'vote'])->middleware('throttle:10,1')->name('student.impostor.vote');
@@ -122,6 +126,7 @@ Route::middleware(['auth', 'teacher'])->prefix('teacher')->group(function () {
     Route::post('/sessions/{room}/calcular-huella', [TeacherCarbonCalculatorController::class, 'calculate'])->name('teacher.carbon.calculate');
     Route::get('/sessions/{room}/impacto-en-cifras', [TeacherCarbonCalculatorController::class, 'impact'])->name('teacher.carbon.impact');
     Route::get('/sessions/{room}/report', TeacherReportController::class)->name('teacher.sessions.report');
+    Route::get('/sessions/{room}/report.pdf', [TeacherReportController::class, 'download'])->name('teacher.sessions.report.pdf');
     Route::post('/sessions/{room}/open', [TeacherRoomController::class, 'open'])->name('teacher.sessions.open');
     Route::post('/sessions/{room}/close', [TeacherRoomController::class, 'close'])->name('teacher.sessions.close');
     Route::post('/sessions/{room}/archive', [TeacherRoomController::class, 'archive'])->name('teacher.sessions.archive');
@@ -149,6 +154,7 @@ Route::middleware(['auth', 'teacher'])->prefix('teacher')->group(function () {
     Route::get('/sessions/{room}/eco-hunt/{hunt}/kit.pdf', [TeacherEcoHuntController::class, 'kit'])->name('teacher.eco-hunts.kit');
 
     Route::post('/sessions/{room}/impostor', [TeacherImpostorController::class, 'start'])->name('teacher.impostor.start');
+    Route::get('/impostor/{game}/state', [TeacherImpostorController::class, 'state'])->name('teacher.impostor.state');
     Route::get('/impostor/{game}', [TeacherImpostorController::class, 'show'])->name('teacher.impostor.show');
     Route::post('/impostor/{game}/launch', [TeacherImpostorController::class, 'launch'])->name('teacher.impostor.launch');
     Route::post('/impostor/{game}/voting', [TeacherImpostorController::class, 'voting'])->name('teacher.impostor.voting');

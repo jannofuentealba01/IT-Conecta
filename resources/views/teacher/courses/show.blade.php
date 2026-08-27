@@ -2,12 +2,17 @@
 @section('content')
 @include('teacher.partials.styles')
 <div class="teacher-shell">
+    <x-breadcrumbs :items="[
+        ['label' => 'Área docente', 'url' => route('teacher.dashboard')],
+        ['label' => 'Cursos', 'url' => route('teacher.courses.index')],
+        ['label' => $course->name],
+    ]" />
     <div class="teacher-header">
         <div><p class="teacher-eyebrow">Curso</p><h1 class="teacher-title">{{ $course->name }}</h1><p class="teacher-subtitle">{{ $course->school_name ?: 'Sin colegio indicado' }}</p></div>
         @if($course->is_active)<a href="{{ route('teacher.sessions.create', $course) }}" class="teacher-btn teacher-btn-primary">＋ Nueva sesión</a>@endif
     </div>
     <div class="teacher-card">
-        <div class="teacher-header" style="margin-bottom:14px;"><h2 style="color:var(--brand-blue-dark); font-size:19px; margin:0;">Historial de sesiones</h2><a href="{{ route('teacher.courses.edit', $course) }}" style="color:var(--brand-blue-dark); font-weight:700;">Editar curso</a></div>
+        <div class="teacher-header" style="margin-bottom:14px;"><h2 class="teacher-section-title teacher-section-title--brand">Historial de sesiones</h2><a href="{{ route('teacher.courses.edit', $course) }}" style="color:var(--brand-blue-dark); font-weight:700;">Editar curso</a></div>
         <div class="teacher-list">
             @forelse($course->rooms as $room)
                 <div class="teacher-row">
@@ -22,7 +27,7 @@
     <div style="display:flex; justify-content:space-between; gap:10px; margin-top:16px; flex-wrap:wrap;">
         <a href="{{ route('teacher.courses.index') }}" class="teacher-btn teacher-btn-muted">← Volver a cursos</a>
         @if($course->is_active)
-            <form method="POST" action="{{ route('teacher.courses.archive', $course) }}" onsubmit="return confirm('¿Archivar este curso? Los datos se conservarán.');">@csrf<button class="teacher-btn teacher-btn-danger">Archivar curso</button></form>
+            <form method="POST" action="{{ route('teacher.courses.archive', $course) }}" data-confirm-title="¿Archivar este curso?" data-confirm-text="El curso dejará de estar activo, pero sus sesiones y resultados se conservarán." data-confirm-button="Sí, archivar" data-confirm-variant="danger">@csrf<button class="teacher-btn teacher-btn-danger-subtle">Archivar curso</button></form>
         @endif
     </div>
 </div>
